@@ -1,4 +1,4 @@
-"""Update ``version_info.txt`` using the first release section in CHANGELOG.md.
+"""Update ``version_info.txt`` using the first release section in CHANGELOG.md. (EOL normalize)
 
 Rules:
 1. First heading with pattern ``## [X.Y.Z]`` (excluding Unreleased) determines the version.
