@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CAN_Frame_Retransmision_Tool"
+# Using dynamic version loaded from version file for single source of truth
+dynamic = ["version"]
+description = "CAN Frame Retransmission Tool"
+readme = "README.md"
+license = "MIT"
+authors = [ { name = "Your Name", email = "you@example.com" } ]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "black",
+  "mypy",
+  "ruff",
+  "pyinstaller"
+]
+
+[project.scripts]
+can-retransmit = "core.main:main"
+
+[tool.setuptools]
+packages = { find = { where = ["."], exclude = ["tests", "resources", "scripts", "hooks"] } }
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { file = "resources/version_info.txt" }
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+warn_return_any = true
+warn_unused_ignores = true
+strict_optional = true
+no_implicit_optional = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+testpaths = ["tests"]

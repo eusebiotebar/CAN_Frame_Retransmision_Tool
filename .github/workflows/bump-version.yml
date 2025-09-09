@@ -1,0 +1,41 @@
+name: Bump Version from Changelog
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'resources/docs/CHANGELOG.md'
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+            python-version: '3.12'
+      - name: Parse changelog and update version
+        run: |
+          python hooks/update_version_from_changelog.py
+      - name: Commit version bump
+        run: |
+          if git diff --quiet resources/version_info.txt pyproject.toml; then
+            echo "No version change detected."; exit 0; fi
+          new_ver=$(cat resources/version_info.txt)
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add resources/version_info.txt pyproject.toml
+          git commit -m "chore: bump version to ${new_ver}"
+          git tag -a "v${new_ver}" -m "Release ${new_ver}" || true
+          git push --follow-tags
+      - name: Trigger release workflow
+        if: always()
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: version-bumped

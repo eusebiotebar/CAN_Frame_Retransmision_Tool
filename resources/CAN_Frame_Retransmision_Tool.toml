@@ -1,0 +1,12 @@
+[project]
+name = "CAN_Frame_Retransmision_Tool"
+version = "0.1.0-dev"
+description = "CAN Frame Retransmission Tool"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
