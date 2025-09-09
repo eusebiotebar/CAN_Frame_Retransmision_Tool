@@ -1,10 +1,9 @@
-"""Update version_info.txt and pyproject.toml based on latest released section in CHANGELOG.md.
+"""Update ``version_info.txt`` using the first release section in CHANGELOG.md.
 
 Rules:
- - Find first heading matching ## [X.Y.Z] (not Unreleased)
- - If current version (in version_info.txt) differs, update.
- - Preserve dev suffix if unreleased section only.
- - If no release sections, do nothing.
+1. First heading with pattern ``## [X.Y.Z]`` (excluding Unreleased) determines the version.
+2. If it differs from the current file, overwrite the file.
+3. If there are no release sections, do nothing.
 """
 from __future__ import annotations
 
@@ -25,18 +24,17 @@ def read_current_version() -> str:
 
 def extract_latest_release() -> str | None:
     text = CHANGELOG.read_text(encoding="utf-8")
-    for m in RE_RELEASE.finditer(text):
-        ver = m.group("ver")
-        if ver.lower() != "unreleased":  # safety
+    for match in RE_RELEASE.finditer(text):
+        ver = match.group("ver")
+        if ver.lower() != "unreleased":  # guard
             return ver
     return None
 
 
 def update_version_files(new_version: str) -> None:
-    VERSION_FILE.write_text(new_version + "\n", encoding="utf-8")
+    VERSION_FILE.write_text(f"{new_version}\n", encoding="utf-8")
+    # pyproject stays dynamic; inert rewrite kept for potential future sync.
     py = PYPROJECT.read_text(encoding="utf-8")
-    # If version is dynamic we do nothing (handled by file). Kept for future static switch.
-    # Optionally could sync a [tool.project] table if needed.
     PYPROJECT.write_text(py, encoding="utf-8")
 
 

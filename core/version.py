@@ -4,16 +4,16 @@ __all__ = ["__version__"]
 
 
 def _load_version() -> str:
-    """Carga la versión desde el fichero de versión.
+    """Load version string from the version file.
 
-    Si algo falla devuelve "0.0.0" como valor seguro.
+    Returns "0.0.0" if any exception occurs (safe fallback).
     """
     try:
         res_root = resources.files("resources")  # type: ignore[attr-defined]
         version_path = res_root.joinpath("version_info.txt")
-        with version_path.open(encoding="utf-8") as f:
-            return f.read().strip()
-    except Exception:
+        with version_path.open(encoding="utf-8") as fh:
+            return fh.read().strip()
+    except Exception:  # noqa: BLE001 broad fallback is intentional
         return "0.0.0"
 
 

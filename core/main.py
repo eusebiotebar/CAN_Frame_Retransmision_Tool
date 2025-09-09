@@ -1,9 +1,9 @@
-"""
-Main Application Logic Module
+"""Main application logic module.
 
-This module contains the main application logic for the CAN Frame Retransmission Tool.
-Refactored modular implementation based on the SRS (Software Requirements Specification).
+Contains the console bootstrap logic for the tool.
 """
+from __future__ import annotations
+
 import sys
 
 from .version import __version__
@@ -13,16 +13,20 @@ def get_version() -> str:
     return __version__
 
 
-def main_console():
-    """Console entry point for the application."""
+def main_console() -> int:
+    """Console entry point."""
     try:
         print(f"CAN Frame Retransmission Tool v{__version__}")
-        # app = CAN_Frame_App()
-        # app.run()
         return 0
-    except Exception as e:
-        print(f"Fatal error: {e}")
+    except Exception as exc:  # noqa: BLE001 keep broad for CLI robustness
+        print(f"Fatal error: {exc}")
         return 1
+
+
+def main() -> int:
+    """Compatibility wrapper for the entrypoint defined in pyproject."""
+    return main_console()
+
 
 if __name__ == "__main__":
     sys.exit(main_console())
