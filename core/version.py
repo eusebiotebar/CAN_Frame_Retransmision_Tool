@@ -18,4 +18,3 @@ def _load_version() -> str:
 
 
 __version__ = _load_version()
-
