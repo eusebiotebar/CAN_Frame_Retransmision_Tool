@@ -3,6 +3,7 @@
 Contains the console bootstrap logic for the tool.
 Minor touch to normalize line endings for Black.
 """
+
 from __future__ import annotations
 
 import sys

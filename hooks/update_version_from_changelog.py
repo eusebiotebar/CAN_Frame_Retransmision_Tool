@@ -5,6 +5,7 @@ Rules:
 2. If it differs from the current file, overwrite the file.
 3. If there are no release sections, do nothing.
 """
+
 from __future__ import annotations
 
 import re
