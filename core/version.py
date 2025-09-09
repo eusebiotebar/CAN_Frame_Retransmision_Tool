@@ -9,7 +9,7 @@ def _load_version() -> str:
     Returns "0.0.0" if any exception occurs (safe fallback).
     """
     try:
-        res_root = resources.files("resources")  # type: ignore[attr-defined]
+        res_root = resources.files("core")  # type: ignore[attr-defined]
         version_path = res_root.joinpath("version_info.txt")
         with version_path.open(encoding="utf-8") as fh:
             return fh.read().strip()

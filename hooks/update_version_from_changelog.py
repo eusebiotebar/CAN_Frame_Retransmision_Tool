@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 CHANGELOG = ROOT / "resources" / "docs" / "CHANGELOG.md"
-VERSION_FILE = ROOT / "resources" / "version_info.txt"
+VERSION_FILE = ROOT / "core" / "version_info.txt"
 PYPROJECT = ROOT / "pyproject.toml"
 
 RE_RELEASE = re.compile(r"^## \[(?P<ver>\d+\.\d+\.\d+)\]", re.MULTILINE)

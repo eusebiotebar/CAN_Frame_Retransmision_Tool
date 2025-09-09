@@ -30,7 +30,7 @@ packages = { find = { where = ["."], exclude = ["tests", "resources", "scripts",
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = { file = "resources/version_info.txt" }
+version = { file = "core/version_info.txt" }
 
 [tool.black]
 line-length = 100
