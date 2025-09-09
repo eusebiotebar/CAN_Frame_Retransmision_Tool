@@ -25,7 +25,8 @@ def get_latest_version_from_changelog(changelog_path: Path) -> str:
     if not changelog_path.exists():
         raise FileNotFoundError(f"Changelog file not found: {changelog_path}")
     
-    with open(changelog_path, 'r', encoding='utf-8') as f:
+    # Default mode is read; omit explicit 'r' to satisfy lint rule UP015
+    with open(changelog_path, encoding='utf-8') as f:
         content = f.read()
     
     # Look for version headers like "## [1.0.0] - 2023-01-01"
