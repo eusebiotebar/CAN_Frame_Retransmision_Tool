@@ -53,6 +53,15 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
       - name: Download Python artifacts
         uses: actions/download-artifact@v4
         with:
@@ -63,6 +72,57 @@ jobs:
         with:
           name: windows-exe
           path: dist/
+      - name: Generate release badge
+        run: |
+          mkdir -p assets
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          # Calculate badge width based on version length
+          VERSION_LENGTH=${#VERSION}
+          BADGE_WIDTH=$((104 + (VERSION_LENGTH - 5) * 7))
+          VERSION_X=$((825 + (VERSION_LENGTH - 5) * 35))
+          
+          # Create release badge SVG
+          cat > assets/release-badge.svg << EOF
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="$BADGE_WIDTH" height="20">
+            <linearGradient id="b" x2="0" y2="100%">
+              <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+              <stop offset="1" stop-opacity=".1"/>
+            </linearGradient>
+            <clipPath id="a">
+              <rect width="$BADGE_WIDTH" height="20" rx="3" fill="#fff"/>
+            </clipPath>
+            <g clip-path="url(#a)">
+              <path fill="#555" d="m0 0h63v20h-63z"/>
+              <path fill="#4c1" d="m63 0h$((BADGE_WIDTH-63))v20h-$((BADGE_WIDTH-63))z"/>
+              <path fill="url(#b)" d="m0 0h${BADGE_WIDTH}v20h-${BADGE_WIDTH}z"/>
+            </g>
+            <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="110">
+              <text x="325" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="530">release</text>
+              <text x="325" y="140" transform="scale(.1)" textLength="530">release</text>
+              <text x="$VERSION_X" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="$((VERSION_LENGTH * 62))">$TAG</text>
+              <text x="$VERSION_X" y="140" transform="scale(.1)" textLength="$((VERSION_LENGTH * 62))">$TAG</text>
+            </g>
+          </svg>
+          EOF
+          
+          echo "Generated badge for version: $TAG"
+          echo "Badge width: $BADGE_WIDTH"
+      - name: Commit and push badge
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if [[ -f assets/release-badge.svg ]]; then
+            git add assets/release-badge.svg
+            if git diff --cached --quiet; then
+              echo "No changes to badge"
+            else
+              git commit -m "chore: update release badge to ${{ steps.version.outputs.tag }}"
+              git push origin HEAD:main
+            fi
+          fi
       - name: Publish Release
         uses: softprops/action-gh-release@v2
         with:
