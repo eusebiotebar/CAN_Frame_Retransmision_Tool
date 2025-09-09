@@ -6,7 +6,7 @@ __all__ = ["__version__"]
 def _load_version() -> str:
     """Load version string from the version file.
 
-    Returns "0.0.0" if any exception occurs (safe fallback). (Touched for EOL normalization)
+    Returns "0.0.0" if any exception occurs (safe fallback).
     """
     try:
         res_root = resources.files("resources")  # type: ignore[attr-defined]
