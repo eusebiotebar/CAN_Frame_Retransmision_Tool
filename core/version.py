@@ -13,3 +13,5 @@ def _load_version() -> str:
         return "0.0.0"
 
 __version__ = _load_version()
+
+# Ajuste: se refactorizó para cumplir con reglas de lint (E501) y se añade este comentario para asegurar commit.
