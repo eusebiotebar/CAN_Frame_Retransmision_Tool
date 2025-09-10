@@ -34,6 +34,8 @@ jobs:
           git push
       - name: Create git tag from changelog
         run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
           python hooks/create_git_tag_from_changelog.py
       - name: Trigger release workflow
         if: always()
