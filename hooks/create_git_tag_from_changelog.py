@@ -53,7 +53,7 @@ def create_git_tag(version: str, message: str | None = None) -> bool:
 def main() -> None:
     try:
         project_root = Path(__file__).parent.parent
-        changelog_path = project_root / "CHANGELOG.md"
+        changelog_path = project_root / "resources" / "docs" / "CHANGELOG.md"
         print(f"Reading changelog from: {changelog_path}")
         version = get_latest_version_from_changelog(changelog_path)
         print(f"Latest version from changelog: {version}")

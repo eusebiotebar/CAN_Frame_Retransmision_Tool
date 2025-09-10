@@ -24,15 +24,17 @@ jobs:
           python hooks/update_version_from_changelog.py
       - name: Commit version bump
         run: |
-          if git diff --quiet resources/version_info.txt pyproject.toml; then
+          if git diff --quiet core/version_info.txt pyproject.toml; then
             echo "No version change detected."; exit 0; fi
-          new_ver=$(cat resources/version_info.txt)
+          new_ver=$(cat core/version_info.txt)
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add resources/version_info.txt pyproject.toml
+          git add core/version_info.txt pyproject.toml
           git commit -m "chore: bump version to ${new_ver}"
-          git tag -a "v${new_ver}" -m "Release ${new_ver}" || true
-          git push --follow-tags
+          git push
+      - name: Create git tag from changelog
+        run: |
+          python hooks/create_git_tag_from_changelog.py
       - name: Trigger release workflow
         if: always()
         uses: peter-evans/repository-dispatch@v3
