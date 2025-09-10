@@ -1,22 +1,22 @@
-# CAN Frame Retransmision Tool
+# CAN_ID_Reframe
 
 [![CI](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/actions/workflows/test-and-deploy.yml/badge.svg)](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/actions/workflows/test-and-deploy.yml)
 [![Auto Release](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/actions/workflows/release-auto.yml/badge.svg)](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/actions/workflows/release-auto.yml)
 ![Release](https://raw.githubusercontent.com/eusebiotebar/CAN_Frame_Retransmision_Tool/main/assets/release-badge.svg)
 [![Download](https://raw.githubusercontent.com/eusebiotebar/CAN_Frame_Retransmision_Tool/main/assets/download-badge.svg)](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest)
 
-Tool for capturing and retransmitting CAN frames (scaffolding stage).
+Tool for reframing / retransmitting CAN IDs (renamed from CAN Frame Retransmision Tool at v0.2.0).
 
 ## Installation
 
 ### 🖥️ Windows Users (Recommended)
 
-Download the latest `can-retransmit.exe` from [Releases](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest) - no Python installation required!
+Download the latest `can-id-reframe.exe` (or legacy `can-retransmit.exe`) from [Releases](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest) - no Python installation required!
 
 ### 🐍 Python Users
 
 ```bash
-pip install can-frame-retransmision-tool
+pip install can-id-reframe  # future published name
 # or install from source
 pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 ```
@@ -47,7 +47,8 @@ python -m venv .venv
 
 pip install -e .[dev]
 pytest -q
-can-retransmit --help
+can-id-reframe --help  # new
+can-retransmit --help  # legacy (supported until v0.3.0)
 ```
 
 ### Build (PEP 517)
@@ -61,7 +62,7 @@ The project now uses `pyproject.toml` (PEP 621). Development dependencies are in
 
 ## Versioning
 
-Semantic Versioning. See [`CHANGELOG.md`](resources/docs/CHANGELOG.md) for more details.
+Semantic Versioning. Project renamed at v0.2.0 (backward compatible CLI alias until v0.3.0). See [`CHANGELOG.md`](resources/docs/CHANGELOG.md) for more details.
 
 ## License
 

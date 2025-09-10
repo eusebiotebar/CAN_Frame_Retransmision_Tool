@@ -18,7 +18,7 @@ def get_version() -> str:
 def main_console() -> int:
     """Console entry point."""
     try:
-        print(f"CAN Frame Retransmission Tool v{__version__}")
+        print(f"CAN_ID_Reframe (formerly CAN Frame Retransmission Tool) v{__version__}")
         return 0
     except Exception as exc:  # noqa: BLE001 keep broad for CLI robustness
         print(f"Fatal error: {exc}")

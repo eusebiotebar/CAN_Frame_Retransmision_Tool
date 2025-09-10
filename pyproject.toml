@@ -2,11 +2,12 @@
 requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# Renamed from CAN_Frame_Retransmision_Tool at v0.2.0
 [project]
-name = "CAN_Frame_Retransmision_Tool"
+name = "CAN_ID_Reframe"
 # Using dynamic version loaded from version file for single source of truth
 dynamic = ["version"]
-description = "CAN Frame Retransmission Tool"
+description = "CAN ID Reframe Tool (formerly CAN Frame Retransmission Tool)"
 readme = "README.md"
 license = "MIT"
 authors = [ { name = "Your Name", email = "you@example.com" } ]
@@ -23,7 +24,8 @@ dev = [
 ]
 
 [project.scripts]
-can-retransmit = "core.main:main"
+can-id-reframe = "core.main:main"
+can-retransmit = "core.main:main"  # legacy entry point kept for backward compatibility until v0.3.0
 
 [tool.setuptools]
 packages = { find = { where = ["."], exclude = ["tests", "resources", "scripts", "hooks"] } }

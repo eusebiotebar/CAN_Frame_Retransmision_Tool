@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-09-10
+
+### Changed
+
+- Project renamed from "CAN Frame Retransmision Tool" to "CAN_ID_Reframe".
+- New console command: `can-id-reframe`.
+- Legacy console command `can-retransmit` retained for transitional compatibility (removal planned for v0.3.0).
+- Updated packaging metadata (`pyproject.toml`) with new name & description.
+- Added new PyInstaller spec (`can-id-reframe.spec`).
+- Introduced new launcher script `can_id_reframe_cli.py`.
+- Updated README branding and usage instructions.
+
+### Notes
+
+- Existing tags and previous releases remain valid.
+- Both executables (`can-id-reframe.exe` and `can-retransmit.exe`) may coexist for one release cycle.
+- No functional changes introduced beyond naming/branding updates.
+
 ## [0.1.1] - 2025-09-10
 
 ### Added (0.1.1)
