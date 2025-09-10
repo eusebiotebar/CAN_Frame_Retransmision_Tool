@@ -19,6 +19,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
             python-version: '3.12.6'
+      - name: Configure git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
       - name: Parse changelog and update version
         run: |
           python hooks/update_version_from_changelog.py
@@ -27,15 +31,11 @@ jobs:
           if git diff --quiet core/version_info.txt pyproject.toml; then
             echo "No version change detected."; exit 0; fi
           new_ver=$(cat core/version_info.txt)
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
           git add core/version_info.txt pyproject.toml
           git commit -m "chore: bump version to ${new_ver}"
           git push
       - name: Create git tag from changelog
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
           python hooks/create_git_tag_from_changelog.py
       - name: Trigger release workflow
         if: always()

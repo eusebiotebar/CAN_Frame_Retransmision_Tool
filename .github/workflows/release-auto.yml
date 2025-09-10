@@ -111,8 +111,8 @@ jobs:
           echo "Badge width: $BADGE_WIDTH"
       - name: Commit and push badge
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "github-actions@users.noreply.github.com"
+          git config --local user.name "github-actions"
           
           if [[ -f assets/release-badge.svg ]]; then
             git add assets/release-badge.svg
