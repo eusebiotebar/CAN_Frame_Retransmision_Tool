@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2025-09-10
 
-### Added
+### Added (0.1.1)
 
 - Integrated `create_git_tag_from_changelog.py` script into CI/CD workflow
 - Automatic git tag creation when CHANGELOG.md is updated
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2025-09-09
 
-### Added
+### Added (0.1.0)
 
 - Initial project scaffolding with modern Python packaging (`pyproject.toml`)
 - Console command `can-retransmit` for CAN frame retransmission tool
