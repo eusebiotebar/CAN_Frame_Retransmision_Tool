@@ -11,7 +11,7 @@ Tool for reframing / retransmitting CAN IDs (renamed from CAN Frame Retransmisio
 
 ### 🖥️ Windows Users (Recommended)
 
-Download the latest `can-id-reframe.exe` (or legacy `can-retransmit.exe`) from [Releases](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest) - no Python installation required!
+Download the latest `can-id-reframe.exe` from [Releases](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest) - no Python installation required!
 
 ### 🐍 Python Users
 
@@ -47,8 +47,7 @@ python -m venv .venv
 
 pip install -e .[dev]
 pytest -q
-can-id-reframe --help  # new
-can-retransmit --help  # legacy (supported until v0.3.0)
+can-id-reframe --help 
 ```
 
 ### Build (PEP 517)

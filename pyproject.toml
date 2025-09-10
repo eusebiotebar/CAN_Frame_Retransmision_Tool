@@ -25,7 +25,6 @@ dev = [
 
 [project.scripts]
 can-id-reframe = "core.main:main"
-can-retransmit = "core.main:main"  # legacy entry point kept for backward compatibility until v0.3.0
 
 [tool.setuptools]
 packages = { find = { where = ["."], exclude = ["tests", "resources", "scripts", "hooks"] } }

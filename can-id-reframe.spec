@@ -1,7 +1,6 @@
-"""PyInstaller spec for CAN_ID_Reframe (renamed from can-retransmit).
+"""PyInstaller spec for CAN_ID_Reframe.
 
 Generates a Windows standalone executable: can-id-reframe.exe
-Legacy executable name (can-retransmit.exe) deprecated from v0.2.0.
 """
 
 # -*- mode: python ; coding: utf-8 -*-
