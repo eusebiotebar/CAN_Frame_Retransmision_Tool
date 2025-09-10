@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2025-09-10
 
-### Added
+### Added (0.1.1)
 
 - Integrated `create_git_tag_from_changelog.py` script into CI/CD workflow
 - Automatic git tag creation when CHANGELOG.md is updated
 - Improved version management system with automated tagging
 - Added comprehensive documentation for automated tagging system
 
-### Fixed
+### Fixed (0.1.1)
 
 - Fixed path references in bump-version workflow to use correct `core/version_info.txt` location
 - Updated changelog path in create_git_tag_from_changelog.py script
