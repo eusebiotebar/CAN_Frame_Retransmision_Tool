@@ -27,6 +27,7 @@ jobs:
           else
             echo "found_tag=no" >> $GITHUB_OUTPUT
             echo "Tag presence: no"
+          fi
       - name: Dispatch release-auto (only if tag exists)
         if: steps.ensure_tag.outputs.found_tag == 'yes'
         uses: peter-evans/repository-dispatch@v3

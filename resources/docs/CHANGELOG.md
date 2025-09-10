@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-09-10
+
+### Changed (0.3.1)
+
+- Standardized release workflow to build only `can-id-reframe.exe` (fully removed legacy build path references).
+- Consolidated naming across documentation and workflows after rename stabilization.
+
+### Removed (0.3.1)
+
+- Purged remaining legacy spec `can-retransmit.spec` and related workflow references.
+
+### Tests (0.3.1)
+
+- Added coverage ensuring both (current) `can-id-reframe` entry point resolves and legacy alias absence is handled in forward plan.
+
+### Documentation (0.3.1)
+
+- Added planned deprecation notes and migration guidance for future 0.3.x cleanup.
+
+### CI/CD (0.3.1)
+
+- Updated `release-auto.yml` to publish only the new executable artifact for leaner releases.
+
+---
+
 ## [0.3.0] - 2025-09-10
 
 ### Removed (0.3.0)

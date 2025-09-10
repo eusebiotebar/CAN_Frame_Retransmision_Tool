@@ -5,9 +5,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  # Permite disparo explícito desde repository-dispatch enviado por bump-version
-  repository_dispatch:
-    types: [version-bumped]
 
 jobs:
   build-python:
@@ -40,16 +37,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[dev]
           pip install pyinstaller
-      - name: Build Windows executables (legacy + new)
+      - name: Build Windows executable
         run: |
-          pyinstaller can-id-reframe.spec
-          ls dist
-      - name: Upload Windows executables
+          pyinstaller --onefile --name can-id-reframe.spec --add-data "core/version_info.txt;core" can-id-reframe_cli.py
+      - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: |
-            dist/can-id-reframe.exe
+          path: dist/can-id-reframe.exe
 
   release:
     needs: [build-python, build-windows]
@@ -61,16 +56,11 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PAT }}
-      - name: Extract version (tag or dispatch payload)
+      - name: Extract version from tag
         id: version
         run: |
-          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
-            VERSION="${{ github.event.client_payload.version }}"
-            TAG="${{ github.event.client_payload.tag }}"
-          else
             VERSION=${GITHUB_REF#refs/tags/v}
             TAG=${GITHUB_REF#refs/tags/}
-          fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Download Python artifacts
