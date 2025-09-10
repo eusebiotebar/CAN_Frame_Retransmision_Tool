@@ -208,3 +208,4 @@ __marimo__/
 
 # workflow
 .github/workflows/logs/*
+.github/prompts/Jules.md
