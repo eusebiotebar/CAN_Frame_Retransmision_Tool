@@ -9,7 +9,7 @@ a = Analysis(
     ['can_id_reframe_cli.py'],
     pathex=[],
     binaries=[],
-    datas=[('core/version_info.txt', 'core')],
+    datas=[('core/version_info.txt', 'core'), ('core/gui.ui', 'core')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

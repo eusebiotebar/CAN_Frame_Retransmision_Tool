@@ -4,9 +4,10 @@ This module defines the CANManager and CANWorker classes, which handle
 CAN device detection, message retransmission, and threading.
 """
 
-import can
 import logging
-from PyQt6.QtCore import QObject, pyqtSignal, QThread
+
+import can
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,10 @@ class CANWorker(QObject):
 
     def run(self):
         """The main retransmission loop."""
-        logger.info(f"Starting CAN retransmission thread. Input: {self.input_config}, Output: {self.output_config}")
+        logger.info(
+            f"Starting CAN retransmission thread. Input: {self.input_config}, "
+            f"Output: {self.output_config}"
+        )
         try:
             self.input_bus = can.interface.Bus(**self.input_config)
             logger.info(f"Input bus '{self.input_config['channel']}' opened.")
@@ -59,7 +63,7 @@ class CANWorker(QObject):
 
         except Exception as e:
             logger.exception("An unhandled exception occurred in CANWorker.")
-            self.error_occurred.emit(f"Error en el worker CAN: {e}")
+            self.error_occurred.emit(f"Error in CAN worker: {e}")
         finally:
             if self.input_bus:
                 self.input_bus.shutdown()

@@ -1,18 +1,28 @@
-"""Main GUI module (usa diseño de Qt Designer `gui.ui`).
+"""Main UI for the CAN_ID_Reframe tool.
 
-Este módulo carga la interfaz desde `gui.ui` para permitir su edición en Qt Creator.
-Contiene únicamente la lógica y cableado de señales.
-"""
+  Contains only logic and signal wiring.
+  """
 from __future__ import annotations
 
+import contextlib
 import logging
 from pathlib import Path
 from typing import Any
 
 from PyQt6 import uic
-from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
-                             QLabel, QLineEdit, QMainWindow, QMessageBox,
-                             QPushButton, QTableWidget, QTableWidgetItem)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+)
 
 from .can_logic import CANManager
 from .logger_setup import LOG_LEVELS, setup_logging
@@ -23,9 +33,9 @@ logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    """Ventana principal de la aplicación."""
+    """Main application window."""
 
-    # Hints para que linters conozcan los atributos inyectados por loadUi
+    # Hints for linters to know the attributes injected by loadUi
     input_channel_combo: QComboBox
     output_channel_combo: QComboBox
     bitrate_combo: QComboBox
@@ -47,7 +57,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         ui_file = Path(__file__).with_name("gui.ui")
         if not ui_file.exists():
-            raise FileNotFoundError(f"No se encuentra el archivo de interfaz: {ui_file}")
+            raise FileNotFoundError(f"Interface file not found: {ui_file}")
         uic.loadUi(str(ui_file), self)  # type: ignore[attr-defined]
 
         self.setWindowTitle(f"CAN ID Reframe Tool v{__version__}")
@@ -56,51 +66,49 @@ class MainWindow(QMainWindow):
 
         self._configure_widgets()
         self._connect_signals()
-        self.update_status("Desconectado", "grey")
+        self.update_status("Disconnected", "grey")
         self.can_manager.detect_channels()
-        logger.info("MainWindow inicializada (UI cargada desde gui.ui).")
+        logger.info("MainWindow initialized (UI loaded from gui.ui).")
 
     # ------------------------------------------------------------------
-    # Configuración inicial de widgets
+    # Initial widget configuration
     # ------------------------------------------------------------------
     def _configure_widgets(self) -> None:
-        # Tabla de frames
+        # Frame table
         self.frames_table.setColumnCount(4)
-        self.frames_table.setHorizontalHeaderLabels(["Timestamp", "ID (Hex)", "DLC", "Datos (Hex)"])
+        self.frames_table.setHorizontalHeaderLabels(["Timestamp", "ID (Hex)", "DLC", "Data (Hex)"])
         self.frames_table.setEditTriggers(self.frames_table.EditTrigger.NoEditTriggers)
         header = self.frames_table.horizontalHeader()
-        if header is not None:  # Defensa ante análisis estático
+        if header is not None:  # Defense against static analysis
             header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
-        # Tabla de mapeo
+        # Mapping table
         self.mapping_table.setColumnCount(2)
-        self.mapping_table.setHorizontalHeaderLabels(["ID Original (Hex)", "ID Reescrito (Hex)"])
+        self.mapping_table.setHorizontalHeaderLabels(["Original ID (Hex)", "Rewritten ID (Hex)"])
         m_header = self.mapping_table.horizontalHeader()
         if m_header is not None:
             m_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        # Bitrate por defecto
+        # Default bitrate
         idx = self.bitrate_combo.findText("250")
         if idx >= 0:
             self.bitrate_combo.setCurrentIndex(idx)
 
-        # Niveles de log
+        # Log levels
         self.log_level_combo.clear()
         self.log_level_combo.addItems(LOG_LEVELS.keys())
         info_idx = self.log_level_combo.findText("INFO")
         if info_idx >= 0:
             self.log_level_combo.setCurrentIndex(info_idx)
 
-        # Acción Acerca de
+        # About action
         if getattr(self, 'actionAcerca_de', None):  # type: ignore[attr-defined]
-            try:
+            with contextlib.suppress(Exception):  # pragma: no cover
                 self.actionAcerca_de.triggered.connect(self._show_about_dialog)  # type: ignore[attr-defined]
-            except Exception:  # pragma: no cover
-                pass
 
     # ------------------------------------------------------------------
-    # Conexión de señales
+    # Signal connections
     # ------------------------------------------------------------------
     def _connect_signals(self) -> None:
         self.can_manager.channels_detected.connect(self._populate_channel_selectors)
@@ -114,7 +122,7 @@ class MainWindow(QMainWindow):
         self.log_file_path_edit.textChanged.connect(self._update_logging_config)
 
     # ------------------------------------------------------------------
-    # Utilidades UI
+    # UI utilities
     # ------------------------------------------------------------------
     def _populate_channel_selectors(self, channels) -> None:
         self.input_channel_combo.clear()
@@ -131,9 +139,9 @@ class MainWindow(QMainWindow):
         self.status_indicator.setStyleSheet(f"background-color: {color}; border-radius: 10px;")
 
     # ------------------------------------------------------------------
-    # Recepción de frames
+    # Frame reception
     # ------------------------------------------------------------------
-    def _add_frame_to_view(self, msg) -> None:  # msg proviene de python-can
+    def _add_frame_to_view(self, msg) -> None:  # msg comes from python-can
         if not self.is_running:
             return
         self.frames_table.insertRow(0)
@@ -145,7 +153,7 @@ class MainWindow(QMainWindow):
             self.frames_table.removeRow(100)
 
     # ------------------------------------------------------------------
-    # Reglas de reescritura
+    # Rewrite rules
     # ------------------------------------------------------------------
     def _on_add_rule(self) -> None:
         self.mapping_table.insertRow(self.mapping_table.rowCount())
@@ -166,12 +174,12 @@ class MainWindow(QMainWindow):
         try:
             return parse_rewrite_rules(table_data)
         except RuleParsingError as e:
-            self._show_error_message("Error de Mapeo", str(e))
+            self._show_error_message("Mapping Error", str(e))
             self.mapping_table.selectRow(e.row)
             return None
 
     # ------------------------------------------------------------------
-    # Control ejecución
+    # Execution control
     # ------------------------------------------------------------------
     def _set_controls_enabled(self, enabled: bool) -> None:
         self.connection_group.setEnabled(enabled)
@@ -181,8 +189,8 @@ class MainWindow(QMainWindow):
         if self.is_running:
             logger.info("Stop button clicked.")
             self.can_manager.stop_retransmission()
-            self.update_status("Detenido", "grey")
-            self.start_stop_button.setText("Iniciar")
+            self.update_status("Stopped", "grey")
+            self.start_stop_button.setText("Start")
             self._set_controls_enabled(True)
             self.is_running = False
             return
@@ -191,36 +199,50 @@ class MainWindow(QMainWindow):
         input_data = self.input_channel_combo.currentData()
         output_data = self.output_channel_combo.currentData()
         if not input_data or not output_data:
-            self._show_error_message("Error de Configuración", "No se han detectado canales o no se han seleccionado.")
+            self._show_error_message(
+                "Configuration Error", 
+                "No channels detected or selected."
+            )
             return
         if input_data['channel'] == output_data['channel']:
-            self._show_error_message("Error de Configuración", "El canal de entrada y salida no pueden ser el mismo.")
+            self._show_error_message(
+                "Configuration Error", 
+                "Input and output channel cannot be the same."
+            )
             return
         try:
             bitrate = int(self.bitrate_combo.currentText()) * 1000
         except ValueError:
-            self._show_error_message("Error de Configuración", "Bitrate inválido.")
+            self._show_error_message("Configuration Error", "Invalid bitrate.")
             return
         rewrite_rules = self._get_rewrite_rules()
         if rewrite_rules is None:
             return
-        input_cfg = {'interface': input_data['interface'], 'channel': input_data['channel'], 'bitrate': bitrate}
-        output_cfg = {'interface': output_data['interface'], 'channel': output_data['channel'], 'bitrate': bitrate}
+        input_cfg = {
+            'interface': input_data['interface'], 
+            'channel': input_data['channel'], 
+            'bitrate': bitrate
+        }
+        output_cfg = {
+            'interface': output_data['interface'], 
+            'channel': output_data['channel'], 
+            'bitrate': bitrate
+        }
         self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules)
-        self.update_status("Retransmitiendo", "green")
-        self.start_stop_button.setText("Detener")
+        self.update_status("Retransmitting", "green")
+        self.start_stop_button.setText("Stop")
         self._set_controls_enabled(False)
         self.is_running = True
 
     # ------------------------------------------------------------------
-    # Errores / diálogos
+    # Errors / dialogs
     # ------------------------------------------------------------------
     def _handle_error(self, error_message: str) -> None:
         logger.error(f"GUI received error: {error_message}")
         self._show_error_message("Error", error_message)
         if self.is_running:
             self.update_status("Error", "red")
-            self.start_stop_button.setText("Iniciar")
+            self.start_stop_button.setText("Start")
             self._set_controls_enabled(True)
             self.is_running = False
 
@@ -234,19 +256,25 @@ class MainWindow(QMainWindow):
     def _show_about_dialog(self) -> None:
         about_text = f"""
             <h2>CAN ID Reframe Tool</h2>
-            <p>Versión: {__version__}</p>
-            <p>Esta herramienta permite la retransmisión de tramas CAN entre dos canales, con la capacidad de reescribir IDs sobre la marcha.</p>
+            <p>Version: {__version__}</p>
+            <p>This tool allows retransmission of CAN frames between two channels, 
+            with the ability to rewrite IDs on the fly.</p>
             <hr>
-            <p><b>Advertencia de Seguridad (REQ-NFR-SAF-002):</b></p>
-            <p>Sea consciente de los posibles efectos secundarios no deseados al retransmitir y modificar tramas CAN en un bus activo. Esta herramienta es para fines de diagnóstico y desarrollo y no debe ser utilizada para controlar sistemas críticos para la seguridad.</p>
+            <p><b>Safety Warning (REQ-NFR-SAF-002):</b></p>
+            <p>Be aware of possible unintended side effects when 
+            retransmitting and modifying CAN frames on an active bus. This tool is 
+            for diagnostic and development purposes and should not be used to 
+            control safety-critical systems.</p>
         """
-        QMessageBox.about(self, "Acerca de CAN ID Reframe Tool", about_text)
+        QMessageBox.about(self, "About CAN ID Reframe Tool", about_text)
 
     # ------------------------------------------------------------------
     # Logging
     # ------------------------------------------------------------------
     def _on_browse_log_file(self) -> None:
-        fileName, _ = QFileDialog.getSaveFileName(self, "Guardar Log Como", "", "Log Files (*.log);;All Files (*)")
+        fileName, _ = QFileDialog.getSaveFileName(
+            self, "Save Log As", "", "Log Files (*.log);;All Files (*)"
+        )
         if fileName:
             self.log_file_path_edit.setText(fileName)
 
@@ -256,13 +284,11 @@ class MainWindow(QMainWindow):
         setup_logging(log_level, log_file)
 
     # ------------------------------------------------------------------
-    # Evento de cierre
+    # Close event
     # ------------------------------------------------------------------
     def closeEvent(self, event) -> None:  # type: ignore[override]
         logger.info("Close event received. Shutting down application.")
-        try:
+        with contextlib.suppress(Exception):
             self.can_manager.stop_retransmission()
-        except Exception:
-            pass
         event.accept()
 

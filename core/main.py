@@ -4,7 +4,9 @@ Contains the bootstrap logic for the PyQt6 application.
 """
 
 import sys
+
 from PyQt6.QtWidgets import QApplication
+
 from .gui import MainWindow
 from .logger_setup import setup_logging
 

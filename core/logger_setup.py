@@ -44,7 +44,7 @@ def setup_logging(log_level_str="INFO", log_file=None):
             file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
             file_handler.setFormatter(formatter)
             root_logger.addHandler(file_handler)
-        except (IOError, PermissionError) as e:
+        except (OSError, PermissionError) as e:
             # If file logging fails, log an error to the console.
             root_logger.error(f"Failed to set up log file at {log_file}: {e}")
 

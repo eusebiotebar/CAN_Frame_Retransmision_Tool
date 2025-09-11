@@ -1,5 +1,7 @@
 import pytest
-from core.utils import parse_rewrite_rules, RuleParsingError
+
+from core.utils import RuleParsingError, parse_rewrite_rules
+
 
 def test_parse_valid_rules():
     """Tests parsing a list of valid rule strings."""
@@ -48,8 +50,8 @@ def test_parse_invalid_hex_value():
         parse_rewrite_rules(data)
 
     # Check that the exception message contains the correct row number
-    assert "fila 2" in str(excinfo.value)
-    assert excinfo.value.row == 1 # Row index should be 1
+    assert "row 2" in str(excinfo.value)
+    assert excinfo.value.row == 1  # Row index should be 1
 
 def test_parse_empty_list():
     """Tests that parsing an empty list results in an empty dictionary."""

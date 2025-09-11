@@ -31,7 +31,10 @@ def parse_rewrite_rules(table_data: list[tuple[str, str]]) -> dict[int, int]:
             rules[original_id] = rewritten_id
         except (ValueError, TypeError) as e:
             # Raise a custom error with the problematic row number
-            raise RuleParsingError(f"ID inválido en la fila {i + 1}. Los IDs deben ser valores hexadecimales.", row=i) from e
+            raise RuleParsingError(
+                f"Invalid ID in row {i + 1}. IDs must be hexadecimal values.", 
+                row=i
+            ) from e
     return rules
 
 def format_can_frame(frame: dict) -> str:
