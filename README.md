@@ -25,10 +25,11 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 
 - **🖥️ Cross-platform GUI**: PyQt6-based interface for CAN frame analysis
 - **⚡ Real-time CAN Communication**: Load, parse, and retransmit CAN frames  
-- **🔧 Command-line Support**: Built-in help and version information via CLI
-- **📊 Session Management**: Export and manage CAN communication sessions
+- **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
 - **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
+- **📊 Session Management**: Export and manage CAN communication sessions
 - **🚀 Standalone Executable**: No Python installation required for Windows users
+- **🐧 Cross-platform**: Windows, Linux, and virtual CAN interface support
 
 ## Usage
 
@@ -41,6 +42,14 @@ can-id-reframe
 
 Or run the Windows executable directly: `can-id-reframe.exe`
 
+The application will automatically detect available CAN devices:
+
+- **Kvaser devices** (requires Kvaser drivers)
+- **PCAN devices** (Windows - USB channels)
+- **Vector devices** (Windows - with Vector drivers)
+- **SocketCAN interfaces** (Linux - can0, can1, etc.)
+- **Virtual channels** (vcan0, vcan1 for testing)
+
 ### Command Line Options
 
 ```bash
@@ -49,6 +58,45 @@ can-id-reframe --version
 
 # Display help (for automation/CI)
 can-id-reframe --help-cli
+```
+
+## Supported CAN Hardware
+
+The application automatically detects and supports various CAN interfaces:
+
+### Windows
+
+- **Kvaser** - Professional CAN interfaces (requires Kvaser CANlib)
+- **PCAN** - Peak-System USB CAN adapters (PCAN_USBBUS1-8)
+- **Vector** - Vector CANoe/CANalyzer hardware
+
+### Linux
+
+- **SocketCAN** - Native Linux CAN interfaces (can0, can1, etc.)
+- Requires CAN utilities: `sudo apt-get install can-utils`
+
+### Testing/Development
+
+- **Virtual CAN** - Software-only channels for testing (vcan0, vcan1)
+
+### Hardware Setup
+
+For **Kvaser devices** on Windows:
+
+1. Install Kvaser drivers from [kvaser.com](https://www.kvaser.com)
+2. Connect your Kvaser device
+3. The application will auto-detect available channels
+
+For **Linux SocketCAN**:
+
+```bash
+# Set up virtual CAN for testing
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+
+# For real hardware (example)
+sudo ip link set can0 up type can bitrate 500000
 ```
 
 ## Features (Planned)

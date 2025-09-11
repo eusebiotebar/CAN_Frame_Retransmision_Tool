@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-09-11
+
+### Added (0.5.0)
+
+- **Physical CAN Device Support**: Auto-detection of real CAN hardware interfaces
+- **Kvaser Device Detection**: Full support for Kvaser CAN devices with automatic channel detection
+- **PCAN Device Support**: Detection of Peak-System USB CAN adapters on Windows (PCAN_USBBUS1-8)
+- **Vector Device Support**: Integration with Vector CANoe/CANalyzer hardware on Windows
+- **SocketCAN Support**: Native Linux CAN interface detection (can0, can1, etc.)
+- **Cross-platform Hardware Detection**: Platform-specific device discovery for Windows and Linux
+- **Enhanced Device Information**: Detailed device naming and interface identification
+
+### Enhanced (0.5.0)
+
+- **CAN Channel Detection**: Expanded from virtual-only to comprehensive physical device scanning
+- **Error Handling**: Robust detection with graceful fallback when drivers are unavailable
+- **Documentation**: Complete hardware setup guide with driver installation instructions
+- **README**: Comprehensive documentation of supported CAN hardware and setup procedures
+
+### Technical Improvements (0.5.0)
+
+- **Type Safety**: Enhanced type annotations using modern Python syntax (`list[dict[str, str]]`)
+- **Code Architecture**: Fixed thread naming conflicts by renaming `thread` to `_thread`
+- **Import Organization**: Added `platform` module for cross-platform device detection
+- **Error Logging**: Improved logging for device detection failures and warnings
+- **Interface Abstraction**: Separated device detection logic into dedicated methods per platform
+
+### Breaking Changes (0.5.0)
+
+- **Hardware Requirements**: Physical CAN devices now require appropriate drivers to be detected
+- **Platform Dependencies**: Some features now require platform-specific CAN libraries
+
+---
+
 ## [0.4.0] - 2025-09-11
 
 ### Added (0.4.0)
