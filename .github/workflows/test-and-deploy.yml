@@ -83,8 +83,19 @@ jobs:
         run: |
           if (Test-Path "dist/can-id-reframe.exe") {
             Write-Host "✅ Executable built successfully"
-            # Test executable can start (will exit quickly without args)
-            & "dist/can-id-reframe.exe" --help 2>$null || Write-Host "Executable basic test completed"
+            # Test executable with CLI help (doesn't start GUI)
+            $exitCode = 0
+            try {
+              & "dist/can-id-reframe.exe" --help-cli
+              $exitCode = $LASTEXITCODE
+            } catch {
+              $exitCode = 1
+            }
+            if ($exitCode -eq 0) {
+              Write-Host "✅ Executable basic test passed"
+            } else {
+              Write-Error "❌ Executable test failed with exit code $exitCode"
+            }
           } else {
             Write-Error "❌ Executable not found"
           }
