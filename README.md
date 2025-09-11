@@ -21,12 +21,42 @@ pip install can-id-reframe  # future published name
 pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 ```
 
+## Features
+
+- **🖥️ Cross-platform GUI**: PyQt6-based interface for CAN frame analysis
+- **⚡ Real-time CAN Communication**: Load, parse, and retransmit CAN frames  
+- **🔧 Command-line Support**: Built-in help and version information via CLI
+- **📊 Session Management**: Export and manage CAN communication sessions
+- **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
+- **🚀 Standalone Executable**: No Python installation required for Windows users
+
+## Usage
+
+### GUI Application (Primary Mode)
+
+```bash
+# Start the graphical interface
+can-id-reframe
+```
+
+Or run the Windows executable directly: `can-id-reframe.exe`
+
+### Command Line Options
+
+```bash
+# Show version information
+can-id-reframe --version
+
+# Display help (for automation/CI)
+can-id-reframe --help-cli
+```
+
 ## Features (Planned)
 
-- Load and parse CAN frames
-- Replay / retransmit frames to a CAN interface
-- Basic GUI
-- Export sessions
+- Advanced CAN frame filtering and analysis
+- Multiple CAN interface support  
+- Session recording and playback
+- Real-time frame monitoring dashboard
 
 ## Project Layout
 
@@ -47,7 +77,12 @@ python -m venv .venv
 
 pip install -e .[dev]
 pytest -q
-can-id-reframe --help 
+
+# Start the GUI application
+can-id-reframe
+
+# Or get command line help  
+can-id-reframe --help-cli
 ```
 
 ### Build (PEP 517)

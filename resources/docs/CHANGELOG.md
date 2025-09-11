@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-09-11
+
+### Added (0.4.0)
+
+- **Command-line argument support**: Added `--version` and `--help-cli` flags for better automation and CI integration
+- **Improved startup handling**: Application now properly parses command-line arguments before initializing GUI components
+- **Enhanced Windows executable**: Better compatibility with headless environments and CI systems
+
+### Changed (0.4.0)
+
+- **Optimized import structure**: GUI dependencies now load only when needed, improving startup performance for CLI operations
+- **Better error handling**: More robust executable behavior in different runtime environments
+- **Enhanced user experience**: Cleaner separation between CLI and GUI functionality
+
+### Technical Improvements (0.4.0)
+
+- Comprehensive code quality improvements with full English localization
+- Enhanced CI/CD pipeline with comprehensive testing and coverage reporting
+- Improved code formatting and linting compliance across entire codebase
+- Better type safety with mypy integration
+
+---
+
 ## [0.3.1] - 2025-09-10
 
 ### Changed (0.3.1)
