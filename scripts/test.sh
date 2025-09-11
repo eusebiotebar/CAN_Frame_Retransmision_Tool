@@ -60,7 +60,7 @@ pytest_args=()
 
 if [[ "$COVERAGE" == true ]] || [[ "$ALL" == true ]]; then
     echo "📊 Running tests with coverage..."
-    pytest_args+=(--cov=core --cov-report=term-missing --cov-report=html)
+    pytest_args+=(--cov=core --cov-report=term-missing --cov-report=html --cov-report=xml)
 fi
 
 if [[ "$VERBOSE" == true ]]; then

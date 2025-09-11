@@ -59,15 +59,15 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-            VERSION=${GITHUB_REF#refs/tags/v}
-            TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${GITHUB_REF#refs/tags/v}
+          TAG=${GITHUB_REF#refs/tags/}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
       - name: Extract changelog section
         id: changelog
         run: |
           ver="${{ steps.version.outputs.version }}"
-          # Extrae líneas entre el encabezado de la versión y el siguiente encabezado de versión
+          # Extrae lï¿½neas entre el encabezado de la versiï¿½n y el siguiente encabezado de versiï¿½n
           awk -v ver="$ver" 'BEGIN{flag=0} /^## \[/ { if(flag){ exit } if($0 ~ "\\["ver"\\]"){ flag=1; next } } flag { print }' resources/docs/CHANGELOG.md > section.md
           echo "section<<EOF" >> $GITHUB_OUTPUT
           cat section.md >> $GITHUB_OUTPUT
