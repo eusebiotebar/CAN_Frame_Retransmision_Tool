@@ -10,9 +10,19 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6 import uic
-from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
-                             QLabel, QLineEdit, QMainWindow, QMessageBox,
-                             QPushButton, QTableWidget, QTableWidgetItem)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+)
 
 from .can_logic import CANManager
 from .logger_setup import LOG_LEVELS, setup_logging
@@ -118,7 +128,7 @@ class MainWindow(QMainWindow):
         self.input_channel_combo.clear()
         self.output_channel_combo.clear()
         for ch in channels:
-            display_name = ch.get("display_name", f"{ch["interface"]}:{ch["channel"]}")
+            display_name = ch.get("display_name", f"{ch['interface']}:{ch['channel']}")
             self.input_channel_combo.addItem(display_name, userData=ch)
             self.output_channel_combo.addItem(display_name, userData=ch)
         if len(channels) > 1:
