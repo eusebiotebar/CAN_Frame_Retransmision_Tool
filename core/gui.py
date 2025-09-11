@@ -1,141 +1,108 @@
-"""Main GUI module for the application.
+"""Main GUI module (usa diseño de Qt Designer `gui.ui`).
 
-This module contains the MainWindow class, which defines the UI and
-connects to the CAN logic.
+Este módulo carga la interfaz desde `gui.ui` para permitir su edición en Qt Creator.
+Contiene únicamente la lógica y cableado de señales.
 """
+from __future__ import annotations
 
 import logging
-from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QGroupBox, QLabel, QComboBox, QPushButton, QTableWidget,
-    QTableWidgetItem, QHeaderView, QMessageBox, QFileDialog, QLineEdit
-)
+from pathlib import Path
+from typing import Any
+
+from PyQt6 import uic
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
+
 from .can_logic import CANManager
-from .logger_setup import setup_logging, LOG_LEVELS
-from .version import __version__
+from .logger_setup import LOG_LEVELS, setup_logging
 from .utils import RuleParsingError, parse_rewrite_rules
+from .version import __version__
 
 logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
-    """Main application window."""
+    """Ventana principal de la aplicación."""
 
-    def __init__(self):
+    # Hints para que linters conozcan los atributos inyectados por loadUi
+    input_channel_combo: QComboBox
+    output_channel_combo: QComboBox
+    bitrate_combo: QComboBox
+    start_stop_button: QPushButton
+    status_label: QLabel
+    status_indicator: QLabel
+    frames_table: QTableWidget
+    mapping_table: QTableWidget
+    add_rule_button: QPushButton
+    delete_rule_button: QPushButton
+    log_level_combo: QComboBox
+    log_file_path_edit: QLineEdit
+    browse_log_file_button: QPushButton
+    actionAcerca_de: Any  # QAction
+    connection_group: QGroupBox
+    mapping_group: QGroupBox
+
+    def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle(f"CAN ID Reframe Tool v{__version__}")
-        self.setGeometry(100, 100, 950, 700)
+        ui_file = Path(__file__).with_name("gui.ui")
+        if not ui_file.exists():
+            raise FileNotFoundError(f"No se encuentra el archivo de interfaz: {ui_file}")
+        uic.loadUi(str(ui_file), self)  # type: ignore[attr-defined]
 
+        self.setWindowTitle(f"CAN ID Reframe Tool v{__version__}")
         self.can_manager = CANManager()
         self.is_running = False
 
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-
-        self.main_layout = QVBoxLayout(central_widget)
-
-        self._create_menu()
-        self._create_widgets()
-        self._create_layouts()
+        self._configure_widgets()
         self._connect_signals()
-
         self.update_status("Desconectado", "grey")
         self.can_manager.detect_channels()
-        logger.info("MainWindow initialized.")
+        logger.info("MainWindow inicializada (UI cargada desde gui.ui).")
 
-    def _create_menu(self):
-        """Creates the main menu bar for the application."""
-        menu_bar = self.menuBar()
-        help_menu = menu_bar.addMenu("&Ayuda")
-        about_action = help_menu.addAction("&Acerca de...")
-        about_action.triggered.connect(self._show_about_dialog)
-
-    def _create_widgets(self):
-        """Create all the widgets for the GUI."""
-        self.connection_group = QGroupBox("Configuración de Conexión")
-        self.input_channel_combo = QComboBox()
-        self.output_channel_combo = QComboBox()
-        self.bitrate_combo = QComboBox()
-        self.bitrate_combo.addItems(["125", "250", "500", "1000"])
-        self.bitrate_combo.setCurrentText("250")
-        self.start_stop_button = QPushButton("Iniciar")
-
-        self.status_group = QGroupBox("Estado")
-        self.status_label = QLabel()
-        self.status_indicator = QLabel()
-        self.status_indicator.setFixedSize(20, 20)
-
-        self.frames_group = QGroupBox("Últimas Tramas Recibidas")
-        self.frames_table = QTableWidget()
+    # ------------------------------------------------------------------
+    # Configuración inicial de widgets
+    # ------------------------------------------------------------------
+    def _configure_widgets(self) -> None:
+        # Tabla de frames
         self.frames_table.setColumnCount(4)
         self.frames_table.setHorizontalHeaderLabels(["Timestamp", "ID (Hex)", "DLC", "Datos (Hex)"])
-        self.frames_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.frames_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.frames_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.frames_table.setEditTriggers(self.frames_table.EditTrigger.NoEditTriggers)
+        header = self.frames_table.horizontalHeader()
+        if header is not None:  # Defensa ante análisis estático
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
-        self.mapping_group = QGroupBox("Mapeo de IDs")
-        self.mapping_table = QTableWidget()
+        # Tabla de mapeo
         self.mapping_table.setColumnCount(2)
         self.mapping_table.setHorizontalHeaderLabels(["ID Original (Hex)", "ID Reescrito (Hex)"])
-        self.mapping_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.add_rule_button = QPushButton("Añadir Regla")
-        self.delete_rule_button = QPushButton("Eliminar Regla")
+        m_header = self.mapping_table.horizontalHeader()
+        if m_header is not None:
+            m_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        self.logging_group = QGroupBox("Configuración de Logging")
-        self.log_level_combo = QComboBox()
+        # Bitrate por defecto
+        idx = self.bitrate_combo.findText("250")
+        if idx >= 0:
+            self.bitrate_combo.setCurrentIndex(idx)
+
+        # Niveles de log
+        self.log_level_combo.clear()
         self.log_level_combo.addItems(LOG_LEVELS.keys())
-        self.log_level_combo.setCurrentText("INFO")
-        self.log_file_path_edit = QLineEdit()
-        self.log_file_path_edit.setPlaceholderText("Opcional: ruta al archivo de log")
-        self.browse_log_file_button = QPushButton("Examinar...")
+        info_idx = self.log_level_combo.findText("INFO")
+        if info_idx >= 0:
+            self.log_level_combo.setCurrentIndex(info_idx)
 
-    def _create_layouts(self):
-        """Create and arrange layouts."""
-        top_controls_layout = QGridLayout(self.connection_group)
-        top_controls_layout.addWidget(QLabel("Canal de Entrada:"), 0, 0)
-        top_controls_layout.addWidget(self.input_channel_combo, 0, 1)
-        top_controls_layout.addWidget(QLabel("Canal de Salida:"), 1, 0)
-        top_controls_layout.addWidget(self.output_channel_combo, 1, 1)
-        top_controls_layout.addWidget(QLabel("Bitrate (kbps):"), 2, 0)
-        top_controls_layout.addWidget(self.bitrate_combo, 2, 1)
+        # Acción Acerca de
+        if getattr(self, 'actionAcerca_de', None):  # type: ignore[attr-defined]
+            try:
+                self.actionAcerca_de.triggered.connect(self._show_about_dialog)  # type: ignore[attr-defined]
+            except Exception:  # pragma: no cover
+                pass
 
-        status_layout = QHBoxLayout(self.status_group)
-        status_layout.addWidget(self.status_indicator)
-        status_layout.addWidget(self.status_label)
-        status_layout.addStretch()
-
-        top_bar_layout = QHBoxLayout()
-        top_bar_layout.addWidget(self.connection_group, 2)
-        top_bar_layout.addWidget(self.start_stop_button, 1)
-        top_bar_layout.addWidget(self.status_group, 1)
-
-        tables_layout = QHBoxLayout()
-        frames_layout = QVBoxLayout(self.frames_group)
-        frames_layout.addWidget(self.frames_table)
-
-        mapping_buttons_layout = QHBoxLayout()
-        mapping_buttons_layout.addStretch()
-        mapping_buttons_layout.addWidget(self.add_rule_button)
-        mapping_buttons_layout.addWidget(self.delete_rule_button)
-        mapping_layout = QVBoxLayout(self.mapping_group)
-        mapping_layout.addWidget(self.mapping_table)
-        mapping_layout.addLayout(mapping_buttons_layout)
-        tables_layout.addWidget(self.frames_group, 2)
-        tables_layout.addWidget(self.mapping_group, 1)
-
-        logging_layout = QGridLayout(self.logging_group)
-        logging_layout.addWidget(QLabel("Nivel de Log:"), 0, 0)
-        logging_layout.addWidget(self.log_level_combo, 0, 1)
-        logging_layout.addWidget(QLabel("Archivo de Log:"), 1, 0)
-        logging_layout.addWidget(self.log_file_path_edit, 1, 1)
-        logging_layout.addWidget(self.browse_log_file_button, 1, 2)
-
-        self.main_layout.addLayout(top_bar_layout)
-        self.main_layout.addLayout(tables_layout)
-        self.main_layout.addWidget(self.logging_group)
-
-    def _connect_signals(self):
-        """Connect widget signals to slots."""
+    # ------------------------------------------------------------------
+    # Conexión de señales
+    # ------------------------------------------------------------------
+    def _connect_signals(self) -> None:
         self.can_manager.channels_detected.connect(self._populate_channel_selectors)
         self.can_manager.error_occurred.connect(self._handle_error)
         self.can_manager.frame_received.connect(self._add_frame_to_view)
@@ -146,7 +113,10 @@ class MainWindow(QMainWindow):
         self.log_level_combo.currentTextChanged.connect(self._update_logging_config)
         self.log_file_path_edit.textChanged.connect(self._update_logging_config)
 
-    def _populate_channel_selectors(self, channels):
+    # ------------------------------------------------------------------
+    # Utilidades UI
+    # ------------------------------------------------------------------
+    def _populate_channel_selectors(self, channels) -> None:
         self.input_channel_combo.clear()
         self.output_channel_combo.clear()
         for ch in channels:
@@ -156,44 +126,43 @@ class MainWindow(QMainWindow):
         if len(channels) > 1:
             self.output_channel_combo.setCurrentIndex(1)
 
-    def update_status(self, message, color):
+    def update_status(self, message: str, color: str) -> None:
         self.status_label.setText(message)
         self.status_indicator.setStyleSheet(f"background-color: {color}; border-radius: 10px;")
 
-    def _add_frame_to_view(self, msg):
-        if not self.is_running: return
+    # ------------------------------------------------------------------
+    # Recepción de frames
+    # ------------------------------------------------------------------
+    def _add_frame_to_view(self, msg) -> None:  # msg proviene de python-can
+        if not self.is_running:
+            return
         self.frames_table.insertRow(0)
-        ts_str = f"{msg.timestamp:.3f}"
-        self.frames_table.setItem(0, 0, QTableWidgetItem(ts_str))
+        self.frames_table.setItem(0, 0, QTableWidgetItem(f"{msg.timestamp:.3f}"))
         self.frames_table.setItem(0, 1, QTableWidgetItem(f"{msg.arbitration_id:X}"))
         self.frames_table.setItem(0, 2, QTableWidgetItem(str(msg.dlc)))
         self.frames_table.setItem(0, 3, QTableWidgetItem(msg.data.hex().upper()))
         if self.frames_table.rowCount() > 100:
             self.frames_table.removeRow(100)
 
-    def _on_add_rule(self):
+    # ------------------------------------------------------------------
+    # Reglas de reescritura
+    # ------------------------------------------------------------------
+    def _on_add_rule(self) -> None:
         self.mapping_table.insertRow(self.mapping_table.rowCount())
 
-    def _on_delete_rule(self):
+    def _on_delete_rule(self) -> None:
         if self.mapping_table.currentRow() >= 0:
             self.mapping_table.removeRow(self.mapping_table.currentRow())
 
     def _get_rewrite_rules(self):
-        """
-        Extracts rule data from the mapping table and uses the utility function to parse it.
-        """
         table_data = []
         for row in range(self.mapping_table.rowCount()):
-            original_item = self.mapping_table.item(row, 0)
-            rewritten_item = self.mapping_table.item(row, 1)
-
-            original_text = original_item.text() if original_item else ""
-            rewritten_text = rewritten_item.text() if rewritten_item else ""
-
-            # Don't add completely empty rows to the data to be parsed
-            if original_text.strip() or rewritten_text.strip():
-                table_data.append((original_text, rewritten_text))
-
+            orig_item = self.mapping_table.item(row, 0)
+            rew_item = self.mapping_table.item(row, 1)
+            orig = orig_item.text() if orig_item else ""
+            rew = rew_item.text() if rew_item else ""
+            if orig.strip() or rew.strip():
+                table_data.append((orig, rew))
         try:
             return parse_rewrite_rules(table_data)
         except RuleParsingError as e:
@@ -201,11 +170,14 @@ class MainWindow(QMainWindow):
             self.mapping_table.selectRow(e.row)
             return None
 
-    def _set_controls_enabled(self, enabled):
+    # ------------------------------------------------------------------
+    # Control ejecución
+    # ------------------------------------------------------------------
+    def _set_controls_enabled(self, enabled: bool) -> None:
         self.connection_group.setEnabled(enabled)
         self.mapping_group.setEnabled(enabled)
 
-    def _on_start_stop_clicked(self):
+    def _on_start_stop_clicked(self) -> None:
         if self.is_running:
             logger.info("Stop button clicked.")
             self.can_manager.stop_retransmission()
@@ -230,18 +202,20 @@ class MainWindow(QMainWindow):
             self._show_error_message("Error de Configuración", "Bitrate inválido.")
             return
         rewrite_rules = self._get_rewrite_rules()
-        if rewrite_rules is None: return
-
-        input_config = {'interface': input_data['interface'], 'channel': input_data['channel'], 'bitrate': bitrate}
-        output_config = {'interface': output_data['interface'], 'channel': output_data['channel'], 'bitrate': bitrate}
-
-        self.can_manager.start_retransmission(input_config, output_config, rewrite_rules)
+        if rewrite_rules is None:
+            return
+        input_cfg = {'interface': input_data['interface'], 'channel': input_data['channel'], 'bitrate': bitrate}
+        output_cfg = {'interface': output_data['interface'], 'channel': output_data['channel'], 'bitrate': bitrate}
+        self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules)
         self.update_status("Retransmitiendo", "green")
         self.start_stop_button.setText("Detener")
         self._set_controls_enabled(False)
         self.is_running = True
 
-    def _handle_error(self, error_message):
+    # ------------------------------------------------------------------
+    # Errores / diálogos
+    # ------------------------------------------------------------------
+    def _handle_error(self, error_message: str) -> None:
         logger.error(f"GUI received error: {error_message}")
         self._show_error_message("Error", error_message)
         if self.is_running:
@@ -250,15 +224,14 @@ class MainWindow(QMainWindow):
             self._set_controls_enabled(True)
             self.is_running = False
 
-    def _show_error_message(self, title, text):
+    def _show_error_message(self, title: str, text: str) -> None:
         msg_box = QMessageBox(self)
         msg_box.setIcon(QMessageBox.Icon.Critical)
         msg_box.setText(text)
         msg_box.setWindowTitle(title)
         msg_box.exec()
 
-    def _show_about_dialog(self):
-        """Displays the 'About' dialog."""
+    def _show_about_dialog(self) -> None:
         about_text = f"""
             <h2>CAN ID Reframe Tool</h2>
             <p>Versión: {__version__}</p>
@@ -269,17 +242,27 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.about(self, "Acerca de CAN ID Reframe Tool", about_text)
 
-    def _on_browse_log_file(self):
+    # ------------------------------------------------------------------
+    # Logging
+    # ------------------------------------------------------------------
+    def _on_browse_log_file(self) -> None:
         fileName, _ = QFileDialog.getSaveFileName(self, "Guardar Log Como", "", "Log Files (*.log);;All Files (*)")
         if fileName:
             self.log_file_path_edit.setText(fileName)
 
-    def _update_logging_config(self):
+    def _update_logging_config(self) -> None:
         log_level = self.log_level_combo.currentText()
         log_file = self.log_file_path_edit.text() or None
         setup_logging(log_level, log_file)
 
-    def closeEvent(self, event):
+    # ------------------------------------------------------------------
+    # Evento de cierre
+    # ------------------------------------------------------------------
+    def closeEvent(self, event) -> None:  # type: ignore[override]
         logger.info("Close event received. Shutting down application.")
-        self.can_manager.stop_retransmission()
+        try:
+            self.can_manager.stop_retransmission()
+        except Exception:
+            pass
         event.accept()
+
