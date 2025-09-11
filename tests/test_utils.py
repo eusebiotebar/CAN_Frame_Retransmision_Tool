@@ -22,14 +22,14 @@ def test_parse_with_empty_and_whitespace_rows():
     """Tests that empty or whitespace-only rows are correctly ignored."""
     data = [
         ("100", "200"),
-        ("", ""),          # Should be ignored
-        ("   ", "   "),    # Should be ignored
+        ("", ""),  # Should be ignored
+        ("   ", "   "),  # Should be ignored
         ("1A", "BEEF"),
-        ("   ", "DEAD"),   # Should fail
+        ("   ", "DEAD"),  # Should fail
     ]
     with pytest.raises(RuleParsingError) as excinfo:
         parse_rewrite_rules(data)
-    assert excinfo.value.row == 4 # 5th row, index 4
+    assert excinfo.value.row == 4  # 5th row, index 4
 
     # Test with only valid and empty rows
     valid_data = [

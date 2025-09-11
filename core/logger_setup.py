@@ -11,6 +11,7 @@ LOG_LEVELS = {
     "CRITICAL": logging.CRITICAL,
 }
 
+
 def setup_logging(log_level_str="INFO", log_file=None):
     """
     Configures the root logger for the application.
@@ -29,9 +30,7 @@ def setup_logging(log_level_str="INFO", log_file=None):
         handler.close()
 
     # Formatter for the logs
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)-20s - %(levelname)-8s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)-20s - %(levelname)-8s - %(message)s")
 
     # Console Handler
     stdout_handler = logging.StreamHandler(sys.stdout)

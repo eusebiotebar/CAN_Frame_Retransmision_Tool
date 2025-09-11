@@ -83,6 +83,7 @@ class CANManager(QObject):
     """
     Manages the CAN worker thread and provides an interface for the GUI.
     """
+
     channels_detected = pyqtSignal(list)
     frame_received = pyqtSignal(object)
     frame_retransmitted = pyqtSignal(object)
@@ -98,8 +99,8 @@ class CANManager(QObject):
         """Detects available CAN channels."""
         logger.info("Detecting CAN channels...")
         available_channels = [
-            {'interface': 'virtual', 'channel': 'vcan0', 'display_name': 'Virtual Channel 0'},
-            {'interface': 'virtual', 'channel': 'vcan1', 'display_name': 'Virtual Channel 1'},
+            {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+            {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
         ]
         logger.info(f"Detected channels: {available_channels}")
         self.channels_detected.emit(available_channels)
@@ -133,7 +134,7 @@ class CANManager(QObject):
             self.worker.stop()
         if self.thread:
             self.thread.quit()
-            self.thread.wait(2000) # Wait up to 2 seconds
+            self.thread.wait(2000)  # Wait up to 2 seconds
             if self.thread.isRunning():
                 logger.warning("CAN thread did not quit gracefully. Terminating.")
                 self.thread.terminate()

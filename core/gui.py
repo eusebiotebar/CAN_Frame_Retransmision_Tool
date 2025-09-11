@@ -2,6 +2,7 @@
 
 Contains only logic and signal wiring.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -199,15 +200,11 @@ class MainWindow(QMainWindow):
         input_data = self.input_channel_combo.currentData()
         output_data = self.output_channel_combo.currentData()
         if not input_data or not output_data:
-            self._show_error_message(
-                "Configuration Error", 
-                "No channels detected or selected."
-            )
+            self._show_error_message("Configuration Error", "No channels detected or selected.")
             return
         if input_data["channel"] == output_data["channel"]:
             self._show_error_message(
-                "Configuration Error", 
-                "Input and output channel cannot be the same."
+                "Configuration Error", "Input and output channel cannot be the same."
             )
             return
         try:
@@ -219,14 +216,14 @@ class MainWindow(QMainWindow):
         if rewrite_rules is None:
             return
         input_cfg = {
-            "interface": input_data["interface"], 
-            "channel": input_data["channel"], 
-            "bitrate": bitrate
+            "interface": input_data["interface"],
+            "channel": input_data["channel"],
+            "bitrate": bitrate,
         }
         output_cfg = {
-            "interface": output_data["interface"], 
-            "channel": output_data["channel"], 
-            "bitrate": bitrate
+            "interface": output_data["interface"],
+            "channel": output_data["channel"],
+            "bitrate": bitrate,
         }
         self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules)
         self.update_status("Retransmitting", "green")
@@ -291,4 +288,3 @@ class MainWindow(QMainWindow):
         with contextlib.suppress(Exception):
             self.can_manager.stop_retransmission()
         event.accept()
-
