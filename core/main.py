@@ -6,9 +6,6 @@ Contains the bootstrap logic for the PyQt6 application.
 import argparse
 import sys
 
-from PyQt6.QtWidgets import QApplication
-
-from .gui import MainWindow
 from .logger_setup import setup_logging
 from .version import __version__
 
@@ -43,6 +40,11 @@ def main() -> int:
 
     # Set up initial logging before the GUI starts
     setup_logging()
+
+    # Import PyQt6 only when we actually need the GUI
+    from PyQt6.QtWidgets import QApplication
+
+    from .gui import MainWindow
 
     app = QApplication(sys.argv)
     window = MainWindow()
