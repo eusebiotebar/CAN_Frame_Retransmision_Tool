@@ -18,7 +18,10 @@ def main() -> int:
     # Parse command line arguments first
     parser = argparse.ArgumentParser(
         prog="can-id-reframe",
-        description="CAN Frame Retransmission Tool - GUI application for CAN bus analysis and retransmission",
+        description=(
+            "CAN Frame Retransmission Tool - GUI application for CAN bus "
+            "analysis and retransmission"
+        ),
     )
     parser.add_argument(
         "--version",

@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
         ui_file = Path(__file__).with_name("gui.ui")
         if not ui_file.exists():
             raise FileNotFoundError(f"Interface file not found: {ui_file}")
-        uic.loadUi(str(ui_file), self)  # type: ignore[attr-defined]
+        uic.loadUi(str(ui_file), self)
 
         self.setWindowTitle(f"CAN ID Reframe Tool v{__version__}")
         self.can_manager = CANManager()
@@ -104,9 +104,9 @@ class MainWindow(QMainWindow):
             self.log_level_combo.setCurrentIndex(info_idx)
 
         # About action
-        if getattr(self, "actionAcerca_de", None):  # type: ignore[attr-defined]
+        if getattr(self, "actionAcerca_de", None):
             with contextlib.suppress(Exception):  # pragma: no cover
-                self.actionAcerca_de.triggered.connect(self._show_about_dialog)  # type: ignore[attr-defined]
+                self.actionAcerca_de.triggered.connect(self._show_about_dialog)
 
     # ------------------------------------------------------------------
     # Signal connections
@@ -283,7 +283,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Close event
     # ------------------------------------------------------------------
-    def closeEvent(self, event) -> None:  # type: ignore[override]
+    def closeEvent(self, event) -> None:
         logger.info("Close event received. Shutting down application.")
         with contextlib.suppress(Exception):
             self.can_manager.stop_retransmission()
