@@ -30,7 +30,7 @@ def setup_logging(log_level_str="INFO", log_file=None):
 
     # Formatter for the logs
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)-20s - %(levelname)-8s - %(message)s'
+        "%(asctime)s - %(name)-20s - %(levelname)-8s - %(message)s"
     )
 
     # Console Handler
@@ -41,7 +41,7 @@ def setup_logging(log_level_str="INFO", log_file=None):
     # File Handler (optional)
     if log_file:
         try:
-            file_handler = logging.FileHandler(log_file, mode='a', encoding='utf-8')
+            file_handler = logging.FileHandler(log_file, mode="a", encoding="utf-8")
             file_handler.setFormatter(formatter)
             root_logger.addHandler(file_handler)
         except (OSError, PermissionError) as e:

@@ -2,9 +2,11 @@
 
 class RuleParsingError(ValueError):
     """Custom exception for errors during rule parsing."""
+
     def __init__(self, message, row):
         super().__init__(message)
         self.row = row
+
 
 def parse_rewrite_rules(table_data: list[tuple[str, str]]) -> dict[int, int]:
     """
@@ -36,6 +38,7 @@ def parse_rewrite_rules(table_data: list[tuple[str, str]]) -> dict[int, int]:
                 row=i
             ) from e
     return rules
+
 
 def format_can_frame(frame: dict) -> str:
     """This function is not currently used by the GUI but is kept for potential CLI use."""

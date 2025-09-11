@@ -17,6 +17,7 @@ def test_parse_valid_rules():
     }
     assert parse_rewrite_rules(data) == expected
 
+
 def test_parse_with_empty_and_whitespace_rows():
     """Tests that empty or whitespace-only rows are correctly ignored."""
     data = [
@@ -53,9 +54,11 @@ def test_parse_invalid_hex_value():
     assert "row 2" in str(excinfo.value)
     assert excinfo.value.row == 1  # Row index should be 1
 
+
 def test_parse_empty_list():
     """Tests that parsing an empty list results in an empty dictionary."""
     assert parse_rewrite_rules([]) == {}
+
 
 def test_one_value_is_empty():
     """Tests a row where one of the values is missing."""
@@ -65,6 +68,7 @@ def test_one_value_is_empty():
     ]
     with pytest.raises(RuleParsingError):
         parse_rewrite_rules(data)
+
 
 def test_malformed_hex_prefix():
     """Tests that '0x' prefixes are handled correctly (or not, as per int(_, 16))."""

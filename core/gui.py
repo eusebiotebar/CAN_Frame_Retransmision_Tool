@@ -1,7 +1,7 @@
 """Main UI for the CAN_ID_Reframe tool.
 
-  Contains only logic and signal wiring.
-  """
+Contains only logic and signal wiring.
+"""
 from __future__ import annotations
 
 import contextlib
@@ -10,19 +10,9 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6 import uic
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
 
 from .can_logic import CANManager
 from .logger_setup import LOG_LEVELS, setup_logging
@@ -103,7 +93,7 @@ class MainWindow(QMainWindow):
             self.log_level_combo.setCurrentIndex(info_idx)
 
         # About action
-        if getattr(self, 'actionAcerca_de', None):  # type: ignore[attr-defined]
+        if getattr(self, "actionAcerca_de", None):  # type: ignore[attr-defined]
             with contextlib.suppress(Exception):  # pragma: no cover
                 self.actionAcerca_de.triggered.connect(self._show_about_dialog)  # type: ignore[attr-defined]
 
@@ -128,7 +118,7 @@ class MainWindow(QMainWindow):
         self.input_channel_combo.clear()
         self.output_channel_combo.clear()
         for ch in channels:
-            display_name = ch.get('display_name', f"{ch['interface']}:{ch['channel']}")
+            display_name = ch.get("display_name", f"{ch["interface"]}:{ch["channel"]}")
             self.input_channel_combo.addItem(display_name, userData=ch)
             self.output_channel_combo.addItem(display_name, userData=ch)
         if len(channels) > 1:
@@ -204,7 +194,7 @@ class MainWindow(QMainWindow):
                 "No channels detected or selected."
             )
             return
-        if input_data['channel'] == output_data['channel']:
+        if input_data["channel"] == output_data["channel"]:
             self._show_error_message(
                 "Configuration Error", 
                 "Input and output channel cannot be the same."
@@ -219,14 +209,14 @@ class MainWindow(QMainWindow):
         if rewrite_rules is None:
             return
         input_cfg = {
-            'interface': input_data['interface'], 
-            'channel': input_data['channel'], 
-            'bitrate': bitrate
+            "interface": input_data["interface"], 
+            "channel": input_data["channel"], 
+            "bitrate": bitrate
         }
         output_cfg = {
-            'interface': output_data['interface'], 
-            'channel': output_data['channel'], 
-            'bitrate': bitrate
+            "interface": output_data["interface"], 
+            "channel": output_data["channel"], 
+            "bitrate": bitrate
         }
         self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules)
         self.update_status("Retransmitting", "green")

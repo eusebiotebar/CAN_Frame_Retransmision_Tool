@@ -13,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class CANWorker(QObject):
-    """
-    Worker object that performs the CAN retransmission in a separate thread.
-    """
+    """Worker object that performs the CAN retransmission in a separate thread."""
+
     frame_received = pyqtSignal(object)
     frame_retransmitted = pyqtSignal(object)
     error_occurred = pyqtSignal(str)
