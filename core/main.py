@@ -30,14 +30,14 @@ def main() -> int:
         action="store_true",
         help="Show this help message and exit (for CI testing)",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Handle --help-cli for CI testing (exits without GUI)
     if args.help_cli:
         parser.print_help()
         return 0
-    
+
     # Set up initial logging before the GUI starts
     setup_logging()
 
