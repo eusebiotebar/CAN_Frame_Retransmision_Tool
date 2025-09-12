@@ -6,7 +6,6 @@ Contains only logic and signal wiring.
 from __future__ import annotations
 
 import contextlib
-import logging
 from pathlib import Path
 from typing import Any
 
@@ -26,11 +25,8 @@ from PyQt6.QtWidgets import (
 )
 
 from .can_logic import CANManager
-from .logger_setup import LOG_LEVELS, setup_logging
 from .utils import RuleParsingError, parse_rewrite_rules
 from .version import __version__
-
-logger = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
@@ -69,7 +65,6 @@ class MainWindow(QMainWindow):
         self._connect_signals()
         self.update_status("Disconnected", "grey")
         self.can_manager.detect_channels()
-        logger.info("MainWindow initialized (UI loaded from gui.ui).")
 
     # ------------------------------------------------------------------
     # Initial widget configuration
@@ -96,13 +91,6 @@ class MainWindow(QMainWindow):
         if idx >= 0:
             self.bitrate_combo.setCurrentIndex(idx)
 
-        # Log levels
-        self.log_level_combo.clear()
-        self.log_level_combo.addItems(LOG_LEVELS.keys())
-        info_idx = self.log_level_combo.findText("INFO")
-        if info_idx >= 0:
-            self.log_level_combo.setCurrentIndex(info_idx)
-
         # About action
         if getattr(self, "actionAcerca_de", None):
             with contextlib.suppress(Exception):  # pragma: no cover
@@ -119,8 +107,6 @@ class MainWindow(QMainWindow):
         self.add_rule_button.clicked.connect(self._on_add_rule)
         self.delete_rule_button.clicked.connect(self._on_delete_rule)
         self.browse_log_file_button.clicked.connect(self._on_browse_log_file)
-        self.log_level_combo.currentTextChanged.connect(self._update_logging_config)
-        self.log_file_path_edit.textChanged.connect(self._update_logging_config)
 
     # ------------------------------------------------------------------
     # UI utilities
@@ -188,7 +174,6 @@ class MainWindow(QMainWindow):
 
     def _on_start_stop_clicked(self) -> None:
         if self.is_running:
-            logger.info("Stop button clicked.")
             self.can_manager.stop_retransmission()
             self.update_status("Stopped", "grey")
             self.start_stop_button.setText("Start")
@@ -196,7 +181,6 @@ class MainWindow(QMainWindow):
             self.is_running = False
             return
 
-        logger.info("Start button clicked.")
         input_data = self.input_channel_combo.currentData()
         output_data = self.output_channel_combo.currentData()
         if not input_data or not output_data:
@@ -215,6 +199,9 @@ class MainWindow(QMainWindow):
         rewrite_rules = self._get_rewrite_rules()
         if rewrite_rules is None:
             return
+
+        log_file = self.log_file_path_edit.text() or None
+
         input_cfg = {
             "interface": input_data["interface"],
             "channel": input_data["channel"],
@@ -225,7 +212,7 @@ class MainWindow(QMainWindow):
             "channel": output_data["channel"],
             "bitrate": bitrate,
         }
-        self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules)
+        self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules, log_file)
         self.update_status("Retransmitting", "green")
         self.start_stop_button.setText("Stop")
         self._set_controls_enabled(False)
@@ -235,7 +222,6 @@ class MainWindow(QMainWindow):
     # Errors / dialogs
     # ------------------------------------------------------------------
     def _handle_error(self, error_message: str) -> None:
-        logger.error(f"GUI received error: {error_message}")
         self._show_error_message("Error", error_message)
         if self.is_running:
             self.update_status("Error", "red")
@@ -275,16 +261,10 @@ class MainWindow(QMainWindow):
         if fileName:
             self.log_file_path_edit.setText(fileName)
 
-    def _update_logging_config(self) -> None:
-        log_level = self.log_level_combo.currentText()
-        log_file = self.log_file_path_edit.text() or None
-        setup_logging(log_level, log_file)
-
     # ------------------------------------------------------------------
     # Close event
     # ------------------------------------------------------------------
     def closeEvent(self, event) -> None:
-        logger.info("Close event received. Shutting down application.")
         with contextlib.suppress(Exception):
             self.can_manager.stop_retransmission()
         event.accept()

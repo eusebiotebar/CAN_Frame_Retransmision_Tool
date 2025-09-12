@@ -4,13 +4,13 @@ This module defines the CANManager and CANWorker classes, which handle
 CAN device detection, message retransmission, and threading.
 """
 
-import logging
 import platform
+from functools import partial
 
 import can
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
-logger = logging.getLogger(__name__)
+from .frame_logger import FrameLogger
 
 
 class CANWorker(QObject):
@@ -29,19 +29,12 @@ class CANWorker(QObject):
         self.output_config = output_config
         self.rewrite_rules = rewrite_rules
         self._is_running = True
-        logger.info("CANWorker initialized.")
 
     def run(self):
         """The main retransmission loop."""
-        logger.info(
-            f"Starting CAN retransmission thread. Input: {self.input_config}, "
-            f"Output: {self.output_config}"
-        )
         try:
             self.input_bus = can.interface.Bus(**self.input_config)
-            logger.info(f"Input bus '{self.input_config['channel']}' opened.")
             self.output_bus = can.interface.Bus(**self.output_config)
-            logger.info(f"Output bus '{self.output_config['channel']}' opened.")
 
             while self._is_running:
                 msg = self.input_bus.recv(timeout=0.5)
@@ -62,21 +55,16 @@ class CANWorker(QObject):
                         self.frame_retransmitted.emit(msg)
 
         except Exception as e:
-            logger.exception("An unhandled exception occurred in CANWorker.")
             self.error_occurred.emit(f"Error in CAN worker: {e}")
         finally:
             if self.input_bus:
                 self.input_bus.shutdown()
-                logger.info("Input bus shut down.")
             if self.output_bus:
                 self.output_bus.shutdown()
-                logger.info("Output bus shut down.")
             self.finished.emit()
-            logger.info("CAN retransmission thread finished.")
 
     def stop(self):
         """Stops the listener loop."""
-        logger.info("Stopping CAN worker...")
         self._is_running = False
 
 
@@ -94,11 +82,10 @@ class CANManager(QObject):
         super().__init__()
         self._thread: QThread | None = None
         self.worker: CANWorker | None = None
-        logger.info("CANManager initialized.")
+        self._frame_logger: FrameLogger | None = None
 
     def detect_channels(self):
         """Detects available CAN channels including physical devices."""
-        logger.info("Detecting CAN channels...")
         available_channels = []
 
         # Add virtual channels for testing
@@ -120,10 +107,10 @@ class CANManager(QObject):
             elif platform.system() == "Linux":
                 available_channels.extend(self._detect_linux_can_devices())
 
-        except Exception as e:
-            logger.warning(f"Error detecting physical CAN devices: {e}")
+        except Exception:
+            # Keep going even if physical device detection fails
+            pass
 
-        logger.info(f"Detected channels: {available_channels}")
         self.channels_detected.emit(available_channels)
 
     def _detect_kvaser_devices(self) -> list[dict[str, str]]:
@@ -147,15 +134,13 @@ class CANManager(QObject):
                             "display_name": f"Kvaser Channel {channel_num}",
                         }
                     )
-                    logger.info(f"Detected Kvaser device: Channel {channel_num}")
                 except Exception:
                     # Channel doesn't exist or can't be opened
                     continue
 
-        except ImportError:
-            logger.debug("Kvaser canlib not available")
-        except Exception as e:
-            logger.warning(f"Error detecting Kvaser devices: {e}")
+        except (ImportError, Exception):
+            # Kvaser library not available or other error
+            pass
 
         return kvaser_channels
 
@@ -191,12 +176,11 @@ class CANManager(QObject):
                                 "display_name": f"PCAN {channel}",
                             }
                         )
-                        logger.info(f"Detected PCAN device: {channel}")
                     except Exception:
                         continue
 
-            except ImportError:
-                logger.debug("PCAN interface not available")
+            except (ImportError, Exception):
+                pass
 
             # Try to detect Vector devices
             try:
@@ -215,15 +199,14 @@ class CANManager(QObject):
                                 "display_name": f"Vector Channel {channel_num}",
                             }
                         )
-                        logger.info(f"Detected Vector device: Channel {channel_num}")
                     except Exception:
                         continue
 
-            except ImportError:
-                logger.debug("Vector interface not available")
+            except (ImportError, Exception):
+                pass
 
-        except Exception as e:
-            logger.warning(f"Error detecting Windows CAN devices: {e}")
+        except Exception:
+            pass
 
         return windows_channels
 
@@ -252,27 +235,38 @@ class CANManager(QObject):
                             "display_name": f"SocketCAN {interface}",
                         }
                     )
-                    logger.info(f"Detected SocketCAN interface: {interface}")
 
-        except Exception as e:
-            logger.warning(f"Error detecting Linux CAN devices: {e}")
+        except Exception:
+            pass
 
         return linux_channels
 
-    def start_retransmission(self, input_config, output_config, rewrite_rules):
+    def start_retransmission(
+        self, input_config, output_config, rewrite_rules, log_file: str | None
+    ):
         """Starts the CAN retransmission in a separate thread."""
-        logger.info("Starting retransmission process...")
         if self._thread and self._thread.isRunning():
             self.stop_retransmission()
+
+        if log_file:
+            self._frame_logger = FrameLogger()
+            self._frame_logger.set_log_path(log_file)
+            self._frame_logger.start_logging()
 
         self._thread = QThread()
         self._thread.setObjectName("CANThread")
         self.worker = CANWorker(input_config, output_config, rewrite_rules)
         self.worker.moveToThread(self._thread)
 
+        # Forward signals from worker to the manager's signals
         self.worker.frame_received.connect(self.frame_received)
         self.worker.frame_retransmitted.connect(self.frame_retransmitted)
         self.worker.error_occurred.connect(self.error_occurred)
+
+        # Connect worker signals to logger if active
+        if self._frame_logger and self._frame_logger.is_logging:
+            self.worker.frame_received.connect(partial(self._frame_logger.log_frame, "RX"))
+            self.worker.frame_retransmitted.connect(partial(self._frame_logger.log_frame, "TX"))
 
         self._thread.started.connect(self.worker.run)
         self.worker.finished.connect(self._thread.quit)
@@ -283,15 +277,16 @@ class CANManager(QObject):
 
     def stop_retransmission(self):
         """Stops the CAN retransmission thread."""
-        logger.info("Stopping retransmission process...")
         if self.worker:
             self.worker.stop()
         if self._thread:
             self._thread.quit()
             self._thread.wait(2000)  # Wait up to 2 seconds
             if self._thread.isRunning():
-                logger.warning("CAN thread did not quit gracefully. Terminating.")
                 self._thread.terminate()
             self._thread = None
             self.worker = None
-            logger.info("Retransmission process stopped.")
+
+        if self._frame_logger:
+            self._frame_logger.stop_logging()
+            self._frame_logger = None
