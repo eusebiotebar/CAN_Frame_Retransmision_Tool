@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-09-12
+
+### Added (0.6.0)
+
+- **CAN Frame CSV Logging**: New `FrameLogger` class for comprehensive frame tracking
+  - High-precision timestamp logging (millisecond accuracy)
+  - Bidirectional logging (Input/Output frame direction tracking)
+  - CSV format with columns: Timestamp, Direction, ID, DLC, Data
+  - Robust error handling for file operations and permissions
+- **Enhanced Development Scripts**: Comprehensive PowerShell and Bash automation
+  - Multi-option build scripts with executable, wheel-only, and clean modes
+  - Advanced test scripts with coverage, linting, typing, and filtering options
+  - Cross-platform script compatibility for Windows and Linux/macOS
+- **Application Icon**: Added custom application icon (`app_icon.ico`)
+- **Comprehensive Documentation**: Extensive README updates with new features
+
+### Changed (0.6.0)
+
+- **Logging Architecture**: Replaced Python standard logging with specialized CAN frame logging
+  - Removed application status logging in favor of communication data logging
+  - Updated GUI to remove log level selection (no longer needed)
+  - Streamlined main application initialization
+- **Build System Enhancement**: Updated development workflow with modern tooling
+  - Enhanced PowerShell scripts with parameter support and error handling
+  - Improved test automation with multiple verification modes
+  - Better integration with CI/CD pipeline requirements
+
+### Removed (0.6.0)
+
+- **Standard Application Logging**: Eliminated `logger_setup.py` module
+  - Removed log level configuration from GUI
+  - Simplified application startup without logging complexity
+
+### Fixed (0.6.0)
+
+- **Code Quality**: Resolved linting issues in `frame_logger.py`
+  - Fixed SIM115 violation with proper noqa comment and justification
+  - Improved code formatting for better maintainability
+- **Frame Timestamp Accuracy**: Corrected timestamp precision in transmitted frames
+
+### Technical Improvements (0.6.0)
+
+- **Enhanced Scripts**: Complete rewrite of build and test automation
+  - Support for PyInstaller executable generation
+  - Coverage reporting with HTML output
+  - Integrated linting with ruff and black
+  - Type checking with mypy integration
+- **Development Experience**: Improved developer workflow
+  - Comprehensive documentation of script options
+  - Better error messages and user feedback
+  - Cross-platform compatibility enhancements
+
+---
+
 ## [0.5.0] - 2025-09-11
 
 ### Added (0.5.0)

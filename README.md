@@ -125,29 +125,9 @@ The logged CSV files contain the following columns:
 | DLC       | Data Length Code                     | 8              |
 | Data      | Frame data in hex format             | 1234567890ABCDEF |
 
-### Logging Usage
-
-```python
-from core.frame_logger import FrameLogger
-
-# Initialize logger
-logger = FrameLogger()
-logger.set_log_path("can_session.csv")
-logger.start_logging()
-
-# Log frames (automated in GUI)
-logger.log_frame("Input", can_message)
-logger.log_frame("Output", modified_message)
-
-# Stop logging
-logger.stop_logging()
-```
-
 ## Features (Planned)
 
 - Advanced CAN frame filtering and analysis
-- Multiple CAN interface support  
-- Session recording and playback
 - Real-time frame monitoring dashboard
 
 ## Project Layout
