@@ -5,6 +5,7 @@ CAN device detection, message retransmission, and threading.
 """
 
 import platform
+import time
 from functools import partial
 
 import can
@@ -46,7 +47,9 @@ class CANWorker(QObject):
                         new_msg = can.Message(
                             arbitration_id=new_id,
                             data=msg.data,
+                            dlc=msg.dlc,
                             is_extended_id=msg.is_extended_id,
+                            timestamp=time.time(),
                         )
                         self.output_bus.send(new_msg)
                         self.frame_retransmitted.emit(new_msg)
@@ -57,6 +60,7 @@ class CANWorker(QObject):
                             data=msg.data,
                             dlc=msg.dlc,
                             is_extended_id=msg.is_extended_id,
+                            timestamp=time.time(),
                         )
                         self.output_bus.send(retransmitted_msg)
                         self.frame_retransmitted.emit(retransmitted_msg)
