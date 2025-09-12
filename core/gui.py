@@ -12,19 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6 import uic
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
 
 from .can_logic import CANManager
 from .utils import RuleParsingError, parse_rewrite_rules
@@ -41,7 +31,8 @@ class MainWindow(QMainWindow):
     start_stop_button: QPushButton
     status_label: QLabel
     status_indicator: QLabel
-    frames_table: QTableWidget
+    frames_table_RX: QTableWidget
+    frames_table_TX: QTableWidget
     mapping_table: QTableWidget
     add_rule_button: QPushButton
     delete_rule_button: QPushButton
@@ -72,14 +63,9 @@ class MainWindow(QMainWindow):
     # Initial widget configuration
     # ------------------------------------------------------------------
     def _configure_widgets(self) -> None:
-        # Frame table
-        self.frames_table.setColumnCount(4)
-        self.frames_table.setHorizontalHeaderLabels(["Timestamp", "ID (Hex)", "DLC", "Data (Hex)"])
-        self.frames_table.setEditTriggers(self.frames_table.EditTrigger.NoEditTriggers)
-        header = self.frames_table.horizontalHeader()
-        if header is not None:  # Defense against static analysis
-            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        # Frame tables configuration
+        self._configure_frame_table(self.frames_table_RX)
+        self._configure_frame_table(self.frames_table_TX)
 
         # Mapping table
         self.mapping_table.setColumnCount(2)
@@ -100,13 +86,24 @@ class MainWindow(QMainWindow):
 
         self._set_default_log_path()
 
+    def _configure_frame_table(self, table: QTableWidget) -> None:
+        """Configure a frame table with standard settings."""
+        table.setColumnCount(4)
+        table.setHorizontalHeaderLabels(["Timestamp", "ID (Hex)", "DLC", "Data (Hex)"])
+        table.setEditTriggers(table.EditTrigger.NoEditTriggers)
+        header = table.horizontalHeader()
+        if header is not None:  # Defense against static analysis
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+
     # ------------------------------------------------------------------
     # Signal connections
     # ------------------------------------------------------------------
     def _connect_signals(self) -> None:
         self.can_manager.channels_detected.connect(self._populate_channel_selectors)
         self.can_manager.error_occurred.connect(self._handle_error)
-        self.can_manager.frame_received.connect(self._add_frame_to_view)
+        self.can_manager.frame_received.connect(self._add_received_frame_to_view)
+        self.can_manager.frame_retransmitted.connect(self._add_transmitted_frame_to_view)
         self.start_stop_button.clicked.connect(self._on_start_stop_clicked)
         self.add_rule_button.clicked.connect(self._on_add_rule)
         self.delete_rule_button.clicked.connect(self._on_delete_rule)
@@ -130,18 +127,27 @@ class MainWindow(QMainWindow):
         self.status_indicator.setStyleSheet(f"background-color: {color}; border-radius: 10px;")
 
     # ------------------------------------------------------------------
-    # Frame reception
+    # Frame reception and transmission
     # ------------------------------------------------------------------
-    def _add_frame_to_view(self, msg) -> None:  # msg comes from python-can
+    def _add_received_frame_to_view(self, msg) -> None:  # msg comes from python-can
+        """Add a received CAN frame to the RX table."""
+        self._add_frame_to_table(self.frames_table_RX, msg)
+
+    def _add_transmitted_frame_to_view(self, msg) -> None:  # msg comes from python-can
+        """Add a transmitted CAN frame to the TX table."""
+        self._add_frame_to_table(self.frames_table_TX, msg)
+
+    def _add_frame_to_table(self, table: QTableWidget, msg) -> None:
+        """Add a CAN frame to the specified table."""
         if not self.is_running:
             return
-        self.frames_table.insertRow(0)
-        self.frames_table.setItem(0, 0, QTableWidgetItem(f"{msg.timestamp:.3f}"))
-        self.frames_table.setItem(0, 1, QTableWidgetItem(f"{msg.arbitration_id:X}"))
-        self.frames_table.setItem(0, 2, QTableWidgetItem(str(msg.dlc)))
-        self.frames_table.setItem(0, 3, QTableWidgetItem(msg.data.hex().upper()))
-        if self.frames_table.rowCount() > 100:
-            self.frames_table.removeRow(100)
+        table.insertRow(0)
+        table.setItem(0, 0, QTableWidgetItem(f"{msg.timestamp:.3f}"))
+        table.setItem(0, 1, QTableWidgetItem(f"{msg.arbitration_id:X}"))
+        table.setItem(0, 2, QTableWidgetItem(str(msg.dlc)))
+        table.setItem(0, 3, QTableWidgetItem(msg.data.hex().upper()))
+        if table.rowCount() > 100:
+            table.removeRow(100)
 
     # ------------------------------------------------------------------
     # Rewrite rules

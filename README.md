@@ -25,11 +25,12 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 
 - **🖥️ Cross-platform GUI**: PyQt6-based interface for CAN frame analysis
 - **⚡ Real-time CAN Communication**: Load, parse, and retransmit CAN frames  
-- **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
+- **� Dual Frame Visualization**: Separate real-time tables for received (RX) and transmitted (TX) frames
+- **�🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
 - **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
-- **📊 Session Management**: Export and manage CAN communication sessions
-- **� Frame Logging**: CSV logging of CAN frames with timestamps and metadata
-- **�🚀 Standalone Executable**: No Python installation required for Windows users
+- **� Session Management**: Export and manage CAN communication sessions
+- **📝 Frame Logging**: CSV logging of CAN frames with timestamps and metadata
+- **🚀 Standalone Executable**: No Python installation required for Windows users
 - **🐧 Cross-platform**: Windows, Linux, and virtual CAN interface support
 - **🛠️ Enhanced Build Scripts**: Comprehensive PowerShell and Bash scripts for development
 
@@ -43,6 +44,13 @@ can-id-reframe
 ```
 
 Or run the Windows executable directly: `can-id-reframe.exe`
+
+The application provides an intuitive interface with:
+
+- **Real-time Frame Monitoring**: Separate tables for received and transmitted CAN frames
+- **Device Auto-detection**: Automatically finds available CAN interfaces
+- **Visual Frame Analysis**: Live display of frame ID, DLC, data, and timestamps
+- **Rule-based ID Mapping**: Configure CAN ID transformations through the GUI
 
 The application will automatically detect available CAN devices:
 
@@ -103,7 +111,14 @@ sudo ip link set can0 up type can bitrate 500000
 
 ## CAN Frame Logging
 
-The application includes comprehensive CAN frame logging functionality:
+The application includes comprehensive CAN frame logging functionality with both visual monitoring and CSV export:
+
+### Visual Monitoring
+
+- **Dual-Table Interface**: Separate real-time tables for received (RX) and transmitted (TX) frames
+- **Live Frame Display**: Real-time visualization of CAN traffic with timestamps
+- **Frame Details**: Complete display of ID, DLC, data payload for each frame
+- **Traffic Analysis**: Clear separation between input and output frame streams
 
 ### Logging Features
 
