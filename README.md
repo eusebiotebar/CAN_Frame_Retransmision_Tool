@@ -28,8 +28,10 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 - **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
 - **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
 - **📊 Session Management**: Export and manage CAN communication sessions
-- **🚀 Standalone Executable**: No Python installation required for Windows users
+- **� Frame Logging**: CSV logging of CAN frames with timestamps and metadata
+- **�🚀 Standalone Executable**: No Python installation required for Windows users
 - **🐧 Cross-platform**: Windows, Linux, and virtual CAN interface support
+- **🛠️ Enhanced Build Scripts**: Comprehensive PowerShell and Bash scripts for development
 
 ## Usage
 
@@ -99,6 +101,48 @@ sudo ip link set up vcan0
 sudo ip link set can0 up type can bitrate 500000
 ```
 
+## CAN Frame Logging
+
+The application includes comprehensive CAN frame logging functionality:
+
+### Logging Features
+
+- **CSV Export**: Automatic logging of CAN frames to CSV files
+- **Timestamp Precision**: High-precision timestamps (millisecond accuracy)
+- **Bidirectional Logging**: Separate tracking of input and output frames
+- **Metadata Capture**: Frame ID, DLC, data payload, and direction
+- **Error Handling**: Robust file operations with permission and I/O error handling
+
+### CSV Format
+
+The logged CSV files contain the following columns:
+
+| Column    | Description                           | Example        |
+|-----------|---------------------------------------|----------------|
+| Timestamp | Frame timestamp (seconds.milliseconds) | 1694520123.456 |
+| Direction | Frame direction (Input/Output)        | Input          |
+| ID        | CAN ID in hexadecimal                | 123            |
+| DLC       | Data Length Code                     | 8              |
+| Data      | Frame data in hex format             | 1234567890ABCDEF |
+
+### Logging Usage
+
+```python
+from core.frame_logger import FrameLogger
+
+# Initialize logger
+logger = FrameLogger()
+logger.set_log_path("can_session.csv")
+logger.start_logging()
+
+# Log frames (automated in GUI)
+logger.log_frame("Input", can_message)
+logger.log_frame("Output", modified_message)
+
+# Stop logging
+logger.stop_logging()
+```
+
 ## Features (Planned)
 
 - Advanced CAN frame filtering and analysis
@@ -110,8 +154,17 @@ sudo ip link set can0 up type can bitrate 500000
 
 ```text
 core/                Library code
+├── frame_logger.py  CAN frame CSV logging functionality
+├── gui.py          Main PyQt6 GUI interface
+├── can_logic.py    CAN communication logic
+├── utils.py        Utility functions and parsers
+└── ...             Other core modules
 resources/           Docs, version, requirements
-scripts/             Helper scripts (build/test/install)
+├── images/         Application icons and assets
+└── docs/           Documentation and changelogs
+scripts/             Enhanced build/test/install scripts
+├── build.ps1/.sh   Cross-platform build automation
+└── test.ps1/.sh    Comprehensive testing with linting
 tests/               Pytest suite
 .github/workflows/   CI pipelines
 ```
@@ -131,6 +184,50 @@ can-id-reframe
 
 # Or get command line help  
 can-id-reframe --help-cli
+```
+
+### Development Scripts
+
+The project includes enhanced PowerShell and Bash scripts for streamlined development:
+
+#### Build Scripts
+
+```powershell
+# Windows (PowerShell)
+.\scripts\build.ps1                    # Basic build (wheel + sdist)
+.\scripts\build.ps1 -WheelOnly         # Build wheel only
+.\scripts\build.ps1 -Executable        # Include PyInstaller executable
+.\scripts\build.ps1 -Clean -Executable # Clean build with executable
+```
+
+```bash
+# Linux/macOS (Bash)
+./scripts/build.sh                     # Basic build
+./scripts/build.sh --wheel-only        # Build wheel only
+./scripts/build.sh --executable        # Include executable
+./scripts/build.sh --clean --executable # Clean build with executable
+```
+
+#### Test Scripts
+
+```powershell
+# Windows (PowerShell)
+.\scripts\test.ps1                     # Basic tests
+.\scripts\test.ps1 -Coverage           # Tests with coverage report
+.\scripts\test.ps1 -Linting            # Include linting (black + ruff)
+.\scripts\test.ps1 -Typing             # Include type checking (mypy)
+.\scripts\test.ps1 -All                # Full test suite
+.\scripts\test.ps1 -Filter "pattern"   # Run specific tests
+```
+
+```bash
+# Linux/macOS (Bash)
+./scripts/test.sh                      # Basic tests
+./scripts/test.sh --coverage           # Tests with coverage
+./scripts/test.sh --linting            # Include linting checks
+./scripts/test.sh --typing             # Include type checking
+./scripts/test.sh --all                # Full test suite
+./scripts/test.sh --filter "pattern"   # Run specific tests
 ```
 
 ### Build (PEP 517)
