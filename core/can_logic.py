@@ -100,27 +100,29 @@ class CANManager(QObject):
         """Detects available CAN channels including physical devices."""
         logger.info("Detecting CAN channels...")
         available_channels = []
-        
+
         # Add virtual channels for testing
-        available_channels.extend([
-            {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
-            {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
-        ])
-        
+        available_channels.extend(
+            [
+                {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+                {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+            ]
+        )
+
         # Detect physical CAN interfaces
         try:
             # Detect Kvaser devices
             available_channels.extend(self._detect_kvaser_devices())
-            
+
             # Detect other physical interfaces based on platform
             if platform.system() == "Windows":
                 available_channels.extend(self._detect_windows_can_devices())
             elif platform.system() == "Linux":
                 available_channels.extend(self._detect_linux_can_devices())
-                
+
         except Exception as e:
             logger.warning(f"Error detecting physical CAN devices: {e}")
-        
+
         logger.info(f"Detected channels: {available_channels}")
         self.channels_detected.emit(available_channels)
 
@@ -137,22 +139,24 @@ class CANManager(QObject):
                     # Try to create a bus to test if the channel exists
                     test_bus = KvaserBus(channel=channel_num, receive_own_messages=False)
                     test_bus.shutdown()
-                    
-                    kvaser_channels.append({
-                        "interface": "kvaser",
-                        "channel": str(channel_num),
-                        "display_name": f"Kvaser Channel {channel_num}"
-                    })
+
+                    kvaser_channels.append(
+                        {
+                            "interface": "kvaser",
+                            "channel": str(channel_num),
+                            "display_name": f"Kvaser Channel {channel_num}",
+                        }
+                    )
                     logger.info(f"Detected Kvaser device: Channel {channel_num}")
                 except Exception:
                     # Channel doesn't exist or can't be opened
                     continue
-                    
+
         except ImportError:
             logger.debug("Kvaser canlib not available")
         except Exception as e:
             logger.warning(f"Error detecting Kvaser devices: {e}")
-            
+
         return kvaser_channels
 
     def _detect_windows_can_devices(self) -> list[dict[str, str]]:
@@ -165,8 +169,14 @@ class CANManager(QObject):
 
                 # Common PCAN channels
                 pcan_channels = [
-                    "PCAN_USBBUS1", "PCAN_USBBUS2", "PCAN_USBBUS3", "PCAN_USBBUS4",
-                    "PCAN_USBBUS5", "PCAN_USBBUS6", "PCAN_USBBUS7", "PCAN_USBBUS8"
+                    "PCAN_USBBUS1",
+                    "PCAN_USBBUS2",
+                    "PCAN_USBBUS3",
+                    "PCAN_USBBUS4",
+                    "PCAN_USBBUS5",
+                    "PCAN_USBBUS6",
+                    "PCAN_USBBUS7",
+                    "PCAN_USBBUS8",
                 ]
 
                 for channel in pcan_channels:
@@ -174,11 +184,13 @@ class CANManager(QObject):
                         test_bus = PcanBus(channel=channel, bitrate=500000)
                         test_bus.shutdown()
 
-                        windows_channels.append({
-                            "interface": "pcan",
-                            "channel": channel,
-                            "display_name": f"PCAN {channel}"
-                        })
+                        windows_channels.append(
+                            {
+                                "interface": "pcan",
+                                "channel": channel,
+                                "display_name": f"PCAN {channel}",
+                            }
+                        )
                         logger.info(f"Detected PCAN device: {channel}")
                     except Exception:
                         continue
@@ -196,11 +208,13 @@ class CANManager(QObject):
                         vector_bus = VectorBus(channel=channel_num, bitrate=500000)
                         vector_bus.shutdown()
 
-                        windows_channels.append({
-                            "interface": "vector",
-                            "channel": str(channel_num),
-                            "display_name": f"Vector Channel {channel_num}"
-                        })
+                        windows_channels.append(
+                            {
+                                "interface": "vector",
+                                "channel": str(channel_num),
+                                "display_name": f"Vector Channel {channel_num}",
+                            }
+                        )
                         logger.info(f"Detected Vector device: Channel {channel_num}")
                     except Exception:
                         continue
@@ -222,24 +236,27 @@ class CANManager(QObject):
             import subprocess
 
             # Get network interfaces
-            result = subprocess.run(['ip', 'link', 'show'], 
-                                  capture_output=True, text=True, timeout=5)
-            
+            result = subprocess.run(
+                ["ip", "link", "show"], capture_output=True, text=True, timeout=5
+            )
+
             if result.returncode == 0:
                 # Look for CAN interfaces (can0, can1, etc.)
-                can_interfaces = re.findall(r'\d+:\s+(can\d+):', result.stdout)
-                
+                can_interfaces = re.findall(r"\d+:\s+(can\d+):", result.stdout)
+
                 for interface in can_interfaces:
-                    linux_channels.append({
-                        "interface": "socketcan",
-                        "channel": interface,
-                        "display_name": f"SocketCAN {interface}"
-                    })
+                    linux_channels.append(
+                        {
+                            "interface": "socketcan",
+                            "channel": interface,
+                            "display_name": f"SocketCAN {interface}",
+                        }
+                    )
                     logger.info(f"Detected SocketCAN interface: {interface}")
-                    
+
         except Exception as e:
             logger.warning(f"Error detecting Linux CAN devices: {e}")
-            
+
         return linux_channels
 
     def start_retransmission(self, input_config, output_config, rewrite_rules):
