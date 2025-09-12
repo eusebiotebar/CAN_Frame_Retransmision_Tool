@@ -25,7 +25,11 @@ class FrameLogger:
 
         try:
             # Use newline='' to prevent blank rows in CSV
-            self._log_file = open(self._log_file_path, mode="w", newline="", encoding="utf-8")
+            # Note: We need to keep the file open for the duration of logging,
+            # so we can't use a context manager here
+            self._log_file = open(  # noqa: SIM115
+                self._log_file_path, mode="w", newline="", encoding="utf-8"
+            )
             self._csv_writer = csv.writer(self._log_file)
             # Write header
             self._csv_writer.writerow(["Timestamp", "Direction", "ID", "DLC", "Data"])
