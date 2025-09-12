@@ -51,8 +51,15 @@ class CANWorker(QObject):
                         self.output_bus.send(new_msg)
                         self.frame_retransmitted.emit(new_msg)
                     else:
-                        self.output_bus.send(msg)
-                        self.frame_retransmitted.emit(msg)
+                        # Create a new message from the original to get a fresh timestamp
+                        retransmitted_msg = can.Message(
+                            arbitration_id=msg.arbitration_id,
+                            data=msg.data,
+                            dlc=msg.dlc,
+                            is_extended_id=msg.is_extended_id,
+                        )
+                        self.output_bus.send(retransmitted_msg)
+                        self.frame_retransmitted.emit(retransmitted_msg)
 
         except Exception as e:
             self.error_occurred.emit(f"Error in CAN worker: {e}")

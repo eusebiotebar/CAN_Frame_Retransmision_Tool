@@ -6,6 +6,8 @@ Contains only logic and signal wiring.
 from __future__ import annotations
 
 import contextlib
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -95,6 +97,8 @@ class MainWindow(QMainWindow):
         if getattr(self, "actionAcerca_de", None):
             with contextlib.suppress(Exception):  # pragma: no cover
                 self.actionAcerca_de.triggered.connect(self._show_about_dialog)
+
+        self._set_default_log_path()
 
     # ------------------------------------------------------------------
     # Signal connections
@@ -254,9 +258,28 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Logging
     # ------------------------------------------------------------------
+    def _set_default_log_path(self) -> None:
+        """Generates and sets the default log file path."""
+        try:
+            # Determine the base path depending on whether the app is frozen
+            base_path = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path.cwd()
+
+            log_dir = base_path / "LOGS"
+            log_dir.mkdir(exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            app_name = "can-id-reframe"
+            log_file_name = f"{app_name}_{timestamp}_log.csv"
+
+            default_path = log_dir / log_file_name
+            self.log_file_path_edit.setText(str(default_path))
+        except Exception:
+            # If path generation fails, leave the field blank
+            self.log_file_path_edit.setText("")
+
     def _on_browse_log_file(self) -> None:
         fileName, _ = QFileDialog.getSaveFileName(
-            self, "Save Log As", "", "Log Files (*.log);;All Files (*)"
+            self, "Save Log As", "", "CSV files (*.csv);;All files (*)"
         )
         if fileName:
             self.log_file_path_edit.setText(fileName)
