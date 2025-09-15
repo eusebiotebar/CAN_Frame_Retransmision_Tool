@@ -47,7 +47,9 @@ def test_parse_incomplete_pair_raises_error():
     assert excinfo.value.row == 0
     assert "Invalid ID in row 1" in str(excinfo.value)
 
+
 # --- Tests for CANManager channel detection (REQ-FUNC-INT-001) ---
+
 
 @patch("core.can_logic.CANManager._detect_linux_can_devices", return_value=[])
 @patch("core.can_logic.CANManager._detect_windows_can_devices", return_value=[])

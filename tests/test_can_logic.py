@@ -17,15 +17,9 @@ def virtual_can_buses():
     """Create a pair of virtual CAN buses for testing."""
     buses = deque()
     buses.append(
-        can.interface.Bus(
-            channel="vcan0", interface="virtual", receive_own_messages=False
-        )
+        can.interface.Bus(channel="vcan0", interface="virtual", receive_own_messages=False)
     )
-    buses.append(
-        can.interface.Bus(
-            channel="vcan1", interface="virtual", receive_own_messages=True
-        )
-    )
+    buses.append(can.interface.Bus(channel="vcan1", interface="virtual", receive_own_messages=True))
 
     yield buses
 
@@ -131,15 +125,14 @@ def test_worker_handles_bus_creation_error():
 
     error_message = None
     error_event = threading.Event()
+
     def on_error(msg):
         nonlocal error_message
         error_message = msg
         error_event.set()
 
     worker = CANWorker(input_config, output_config, {})
-    worker.error_occurred.connect(
-        on_error, type=Qt.ConnectionType.DirectConnection
-    )
+    worker.error_occurred.connect(on_error, type=Qt.ConnectionType.DirectConnection)
 
     worker.run()
 
@@ -172,12 +165,8 @@ def test_signals_are_emitted_for_frames(virtual_can_buses):
         retransmitted_event.set()
 
     worker = CANWorker(input_config, output_config, {})
-    worker.frame_received.connect(
-        on_receive, type=Qt.ConnectionType.DirectConnection
-    )
-    worker.frame_retransmitted.connect(
-        on_retransmit, type=Qt.ConnectionType.DirectConnection
-    )
+    worker.frame_received.connect(on_receive, type=Qt.ConnectionType.DirectConnection)
+    worker.frame_retransmitted.connect(on_retransmit, type=Qt.ConnectionType.DirectConnection)
 
     worker_thread = threading.Thread(target=worker.run, daemon=True)
     worker_thread.start()
