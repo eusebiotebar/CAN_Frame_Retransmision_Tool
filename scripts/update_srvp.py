@@ -20,7 +20,7 @@ def run_tests():
     subprocess.run(
         [
             "pytest",
-            f"--json-report",
+            "--json-report",
             f"--json-report-file={REPORT_PATH}",
             str(TESTS_DIR),
         ],
@@ -37,7 +37,7 @@ def parse_test_report():
     if not REPORT_PATH.exists():
         raise FileNotFoundError(f"Test report not found at {REPORT_PATH}")
 
-    with open(REPORT_PATH, "r") as f:
+    with open(REPORT_PATH) as f:
         report = json.load(f)
 
     test_outcomes = {}
@@ -95,7 +95,9 @@ def update_srvp_document(req_statuses):
 
     # Regex to find a markdown table row for a functional requirement
     # It captures the ID and the status part of the line
-    req_line_pattern = re.compile(r"\| (REQ-FUNC-\w+-\d{3}) \| Test \|.*?\| (\[ \] Not Started|Verified|Failed) \|")
+    req_line_pattern = re.compile(
+        r"\| (REQ-FUNC-\w+-\d{3}) \| Test \|.*?\| (\[ \] Not Started|Verified|Failed) \|"
+    )
 
     for line in lines:
         match = req_line_pattern.search(line)
@@ -109,7 +111,7 @@ def update_srvp_document(req_statuses):
                 new_lines.append(new_line)
                 print(f"  - Updated {req_id}: {old_status} -> {new_status}")
             else:
-                new_lines.append(line) # Keep line as is if no status found
+                new_lines.append(line)  # Keep line as is if no status found
         else:
             new_lines.append(line)
 
