@@ -89,7 +89,7 @@ if [[ "$LINTING" == true ]] || [[ "$ALL" == true ]]; then
     python -m pip install --upgrade black ruff
     
     echo "  📝 Checking code formatting with black..."
-    python -m black --check --diff .
+    python -m black --check . || (echo 'Black formatting differences:' && python -m black --diff . && exit 1)
     
     echo "  🔍 Running ruff linter..."
     python -m ruff check .

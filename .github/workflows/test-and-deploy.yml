@@ -47,10 +47,8 @@ jobs:
           
       - name: Lint
         run: |
-          ruff check .
-          # Run Black; if it fails, show the diff for easier diagnosis
-          black --check . || (echo 'Black formatting differences:' && black --diff . && exit 1)
-          mypy core || true
+          chmod +x scripts/test.sh
+          scripts/test.sh --linting
       - name: Build artifact
         run: |
           pip install build
