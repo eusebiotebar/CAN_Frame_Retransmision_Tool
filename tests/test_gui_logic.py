@@ -4,9 +4,11 @@ import threading
 from unittest.mock import patch
 
 import pytest
+from PyQt6.QtCore import Qt
 
 from core.can_logic import CANManager
 from core.utils import RuleParsingError, parse_rewrite_rules
+
 
 # --- Tests for parse_rewrite_rules (REQ-FUNC-INT-007) ---
 
@@ -67,7 +69,7 @@ def test_channel_detection_signal(mock_detect_kvaser, mock_detect_win, mock_dete
         detected_channels_list.extend(channels)
         detection_event.set()
 
-    manager.channels_detected.connect(on_channels_detected)
+    manager.channels_detected.connect(on_channels_detected, type=Qt.ConnectionType.DirectConnection)
 
     # Act
     manager.detect_channels()

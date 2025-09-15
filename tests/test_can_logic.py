@@ -1,6 +1,5 @@
 """Tests for the core CAN bus retransmission logic (REQ-FUNC-LOG-*)."""
 
-import contextlib
 import threading
 import time
 from collections import deque
@@ -16,21 +15,17 @@ from core.can_logic import CANWorker
 def virtual_can_buses():
     """Create a pair of virtual CAN buses for testing."""
     buses = deque()
-    buses.append(
-        can.interface.Bus(
-            channel="vcan0",
-            interface="virtual",
-            receive_own_messages=False,
-        )
-    )
+    buses.append(can.interface.Bus(channel="vcan0", interface="virtual", receive_own_messages=False))
     buses.append(can.interface.Bus(channel="vcan1", interface="virtual", receive_own_messages=True))
 
     yield buses
 
     # Shutdown buses after test execution
     for bus in buses:
-        with contextlib.suppress(can.CanError):
+        try:
             bus.shutdown()
+        except can.CanError:
+            pass
 
 
 def test_can_frame_is_rewritten_and_retransmitted(virtual_can_buses):
