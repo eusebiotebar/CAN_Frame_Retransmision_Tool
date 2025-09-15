@@ -3,3 +3,4 @@ black
 mypy
 ruff
 pyinstaller
+pytest-json-report
