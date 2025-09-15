@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from PyQt6 import uic
+from PyQt6.QtGui import QCloseEvent, QIcon
 from PyQt6.QtWidgets import (
     QComboBox,
     QFileDialog,
@@ -25,9 +25,10 @@ from PyQt6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
 )
+from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
-from .utils import RuleParsingError, parse_rewrite_rules
+from .utils import RuleParsingError, get_resource_path, parse_rewrite_rules
 from .version import __version__
 
 
@@ -58,9 +59,21 @@ class MainWindow(QMainWindow):
         ui_file = Path(__file__).with_name("gui.ui")
         if not ui_file.exists():
             raise FileNotFoundError(f"Interface file not found: {ui_file}")
-        uic.loadUi(str(ui_file), self)
+        loadUi(str(ui_file), self)
 
         self.setWindowTitle(f"CAN ID Reframe Tool v{__version__}")
+        # Set specific window icon (fallback if application icon not used)
+        try:
+            icon_path = get_resource_path("resources", "images", "app_icon.ico")
+            if icon_path.exists():
+                self.setWindowIcon(QIcon(str(icon_path)))
+            else:
+                # Fallback to SVG if ICO is unavailable during dev
+                svg_path = get_resource_path("resources", "images", "can_relay_icon.svg")
+                if svg_path.exists():
+                    self.setWindowIcon(QIcon(str(svg_path)))
+        except Exception:
+            pass
         self.can_manager = CANManager()
         self.is_running = False
 
@@ -303,7 +316,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Close event
     # ------------------------------------------------------------------
-    def closeEvent(self, event) -> None:
+    def closeEvent(self, a0: QCloseEvent) -> None:  # type: ignore[override]
         with contextlib.suppress(Exception):
             self.can_manager.stop_retransmission()
-        event.accept()
+        a0.accept()

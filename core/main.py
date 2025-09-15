@@ -38,11 +38,16 @@ def main() -> int:
         return 0
 
     # Import PyQt6 only when we actually need the GUI
+    from PyQt6.QtGui import QIcon
     from PyQt6.QtWidgets import QApplication
 
     from .gui import MainWindow
+    from .utils import get_resource_path
 
     app = QApplication(sys.argv)
+    # Set application icon (taskbar, etc.)
+    app_icon_path = get_resource_path("resources", "images", "app_icon.ico")
+    app.setWindowIcon(QIcon(str(app_icon_path)))
     window = MainWindow()
     window.show()
     return int(app.exec())

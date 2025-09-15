@@ -1,5 +1,11 @@
 """Utility functions for the CAN ID Reframe tool."""
 
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import cast
+
 
 class RuleParsingError(ValueError):
     """Custom exception for errors during rule parsing."""
@@ -46,3 +52,30 @@ def format_can_frame(frame: dict) -> str:
     data = frame.get("data", b"")
     hex_data = " ".join(f"{b:02X}" for b in data)
     return f"ID=0x{frame_id:X} DATA={hex_data}"
+
+
+# ---------------------------------------------------------------------------
+# Resource helpers
+# ---------------------------------------------------------------------------
+def get_resource_path(*parts: str | Path) -> Path:
+    """Return an absolute path to a resource bundled with the app.
+
+    Works both in development and when frozen with PyInstaller.
+
+    - When frozen (``sys.frozen``), resources are looked up under ``sys._MEIPASS``.
+    - In development, resources are resolved relative to the project root
+      (the parent directory of the ``core`` package).
+    """
+    # Base directory for resources when frozen by PyInstaller
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        # mypy: sys._MEIPASS is injected by PyInstaller at runtime
+        try:
+            meipass_obj = cast(object, sys)
+            meipass = object.__getattribute__(meipass_obj, "_MEIPASS")
+            base = Path(cast(str, meipass))
+        except Exception:
+            base = Path.cwd()
+    else:
+        # core/utils.py -> parent is 'core', parent of that is the project root
+        base = Path(__file__).resolve().parents[1]
+    return base.joinpath(*map(str, parts))

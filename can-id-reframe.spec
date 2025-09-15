@@ -9,7 +9,12 @@ a = Analysis(
     ['can_id_reframe_cli.py'],
     pathex=[],
     binaries=[],
-    datas=[('core/version_info.txt', 'core'), ('core/gui.ui', 'core')],
+    datas=[
+        ('core/version_info.txt', 'core'),
+        ('core/gui.ui', 'core'),
+        ('resources/images/app_icon.ico', 'resources/images'),
+        ('resources/images/can_relay_icon.svg', 'resources/images'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -39,4 +44,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='resources/images/app_icon.ico',
 )
