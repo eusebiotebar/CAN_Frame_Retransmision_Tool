@@ -4,13 +4,12 @@ import threading
 from unittest.mock import patch
 
 import pytest
-from PyQt6.QtCore import Qt
 
 from core.can_logic import CANManager
 from core.utils import RuleParsingError, parse_rewrite_rules
 
-
 # --- Tests for parse_rewrite_rules (REQ-FUNC-INT-007) ---
+
 
 def test_parse_valid_rules():
     """Verify that valid hex strings are parsed correctly."""
@@ -18,15 +17,18 @@ def test_parse_valid_rules():
     expected = {0x100: 0x200, 0xABC: 0xDEF}
     assert parse_rewrite_rules(rules_data) == expected
 
+
 def test_parse_empty_rules_list():
     """Verify that an empty list results in an empty dictionary."""
     assert parse_rewrite_rules([]) == {}
+
 
 def test_parse_rules_with_empty_rows():
     """Verify that empty or whitespace-only rows are ignored."""
     rules_data = [("100", "200"), ("", "   "), ("  ", "")]
     expected = {0x100: 0x200}
     assert parse_rewrite_rules(rules_data) == expected
+
 
 def test_parse_invalid_hex_raises_error():
     """Verify that non-hexadecimal strings raise RuleParsingError."""
@@ -35,6 +37,7 @@ def test_parse_invalid_hex_raises_error():
         parse_rewrite_rules(rules_data)
     assert excinfo.value.row == 1
     assert "Invalid ID in row 2" in str(excinfo.value)
+
 
 def test_parse_incomplete_pair_raises_error():
     """Verify that a row with a missing ID raises RuleParsingError."""
@@ -69,7 +72,7 @@ def test_channel_detection_signal(mock_detect_kvaser, mock_detect_win, mock_dete
         detected_channels_list.extend(channels)
         detection_event.set()
 
-    manager.channels_detected.connect(on_channels_detected, type=Qt.ConnectionType.DirectConnection)
+    manager.channels_detected.connect(on_channels_detected)
 
     # Act
     manager.detect_channels()

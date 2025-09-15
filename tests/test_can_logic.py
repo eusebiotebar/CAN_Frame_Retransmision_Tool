@@ -1,5 +1,6 @@
 """Tests for the core CAN bus retransmission logic (REQ-FUNC-LOG-*)."""
 
+import contextlib
 import threading
 import time
 from collections import deque
@@ -15,17 +16,23 @@ from core.can_logic import CANWorker
 def virtual_can_buses():
     """Create a pair of virtual CAN buses for testing."""
     buses = deque()
-    buses.append(can.interface.Bus(channel="vcan0", interface="virtual", receive_own_messages=False))
-    buses.append(can.interface.Bus(channel="vcan1", interface="virtual", receive_own_messages=True))
+    buses.append(
+        can.interface.Bus(
+            channel="vcan0", interface="virtual", receive_own_messages=False
+        )
+    )
+    buses.append(
+        can.interface.Bus(
+            channel="vcan1", interface="virtual", receive_own_messages=True
+        )
+    )
 
     yield buses
 
     # Shutdown buses after test execution
     for bus in buses:
-        try:
+        with contextlib.suppress(can.CanError):
             bus.shutdown()
-        except can.CanError:
-            pass
 
 
 def test_can_frame_is_rewritten_and_retransmitted(virtual_can_buses):
@@ -130,12 +137,14 @@ def test_worker_handles_bus_creation_error():
         error_event.set()
 
     worker = CANWorker(input_config, output_config, {})
-    # This connection is in the same thread, but DirectConnection is good practice
-    worker.error_occurred.connect(on_error, type=Qt.ConnectionType.DirectConnection)
+    worker.error_occurred.connect(
+        on_error, type=Qt.ConnectionType.DirectConnection
+    )
 
     worker.run()
 
     assert error_event.wait(timeout=1.0), "The error_occurred signal was not emitted"
+    assert error_message is not None
     assert "Error in CAN worker" in error_message
 
 
@@ -163,8 +172,12 @@ def test_signals_are_emitted_for_frames(virtual_can_buses):
         retransmitted_event.set()
 
     worker = CANWorker(input_config, output_config, {})
-    worker.frame_received.connect(on_receive, type=Qt.ConnectionType.DirectConnection)
-    worker.frame_retransmitted.connect(on_retransmit, type=Qt.ConnectionType.DirectConnection)
+    worker.frame_received.connect(
+        on_receive, type=Qt.ConnectionType.DirectConnection
+    )
+    worker.frame_retransmitted.connect(
+        on_retransmit, type=Qt.ConnectionType.DirectConnection
+    )
 
     worker_thread = threading.Thread(target=worker.run, daemon=True)
     worker_thread.start()
