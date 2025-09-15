@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-09-15
+
+### Added (0.7.0)
+
+- Application and window icons integrated into the GUI (PyQt6)
+  - New high-quality CAN relay icon (`can_relay_icon.{png,svg}`)
+  - App icon bundled and applied (`app_icon.ico`)
+- Dual frame visualization in the GUI for clear RX/TX separation
+- PyInstaller bundling of icons and UI file via updated spec
+
+### Changed (0.7.0)
+
+- Improved GUI layout and elements in `core/gui.ui`
+- Organized and formatted GUI module imports and code style (`core/gui.py`)
+- README updated with features and usage refinements
+
+### Technical Improvements (0.7.0)
+
+- Streamlined application spec (`can-id-reframe.spec`) to include required assets
+- Minor utilities enhancements in `core/utils.py`
+
+---
+
 ## [0.6.0] - 2025-09-12
 
 ### Added (0.6.0)
