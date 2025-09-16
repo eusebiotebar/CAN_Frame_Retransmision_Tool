@@ -4,6 +4,7 @@ This module defines the CANManager and CANWorker classes, which handle
 CAN device detection, message retransmission, and threading.
 """
 
+import contextlib
 import platform
 import time
 from functools import partial
@@ -22,23 +23,49 @@ class CANWorker(QObject):
     error_occurred = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, input_config, output_config, rewrite_rules):
+    def __init__(self, input_config, output_config, rewrite_rules,
+                 *, retry_on_busoff: bool = True, max_retries: int = 3, retry_delay: float = 0.5):
         super().__init__()
-        self.input_bus = None
-        self.output_bus = None
+        # Buses are opened lazily in _open_buses
+        self.input_bus: can.BusABC | None = None
+        self.output_bus: can.BusABC | None = None
         self.input_config = input_config
         self.output_config = output_config
         self.rewrite_rules = rewrite_rules
         self._is_running = True
+        # NFR-REL-001: Auto-recovery parameters
+        self._retry_on_busoff = retry_on_busoff
+        self._max_retries = max_retries
+        self._retry_delay = retry_delay
+        self._last_open_error: Exception | None = None
 
     def run(self):
         """The main retransmission loop."""
         try:
-            self.input_bus = can.interface.Bus(**self.input_config)
-            self.output_bus = can.interface.Bus(**self.output_config)
+            if not self._open_buses():
+                raise (self._last_open_error or RuntimeError("Failed to open CAN buses"))
 
             while self._is_running:
-                msg = self.input_bus.recv(timeout=0.5)
+                try:
+                    # Narrow types for static analysis and ensure buses are ready
+                    assert self.input_bus is not None
+                    assert self.output_bus is not None
+                    msg = self.input_bus.recv(timeout=0.5)
+                except Exception as e:  # Handle transient CAN errors such as bus-off
+                    # REQ-NFR-REL-001: attempt auto-recovery when bus-off occurs or input bus broken
+                    text = str(e).lower()
+                    looks_bus_off = ("bus off" in text) or isinstance(
+                        e, (can.CanError, AttributeError)
+                    )
+                    if self._retry_on_busoff and looks_bus_off:
+                        recovered = self._attempt_recovery()
+                        if recovered:
+                            # Continue loop and try receiving again
+                            continue
+                        # If not recovered, escalate as bus-off for consistent reporting
+                        raise can.CanError("bus off") from e
+                    # Propagate to outer handler
+                    raise
                 if msg:
                     self.frame_received.emit(msg)
                     new_id = self.rewrite_rules.get(msg.arbitration_id)
@@ -51,6 +78,7 @@ class CANWorker(QObject):
                             is_extended_id=msg.is_extended_id,
                             timestamp=time.time(),
                         )
+                        assert self.output_bus is not None
                         self.output_bus.send(new_msg)
                         self.frame_retransmitted.emit(new_msg)
                     else:
@@ -62,6 +90,7 @@ class CANWorker(QObject):
                             is_extended_id=msg.is_extended_id,
                             timestamp=time.time(),
                         )
+                        assert self.output_bus is not None
                         self.output_bus.send(retransmitted_msg)
                         self.frame_retransmitted.emit(retransmitted_msg)
 
@@ -77,6 +106,43 @@ class CANWorker(QObject):
     def stop(self):
         """Stops the listener loop."""
         self._is_running = False
+
+    # ------------------------------------------------------------------
+    # Internals
+    # ------------------------------------------------------------------
+    def _open_buses(self) -> bool:
+        """Open input/output buses according to configs. Returns True on success."""
+        try:
+            self.input_bus = can.interface.Bus(**self.input_config)
+            self.output_bus = can.interface.Bus(**self.output_config)
+            return True
+        except Exception as e:
+            self._last_open_error = e
+            return False
+
+    def _attempt_recovery(self) -> bool:
+        """Attempt to recover from a bus-off by reopening buses with retries.
+
+        Returns True if recovery succeeded, False otherwise.
+        """
+        # Close current buses defensively
+        with contextlib.suppress(Exception):
+            if self.input_bus:
+                self.input_bus.shutdown()
+        with contextlib.suppress(Exception):
+            if self.output_bus:
+                self.output_bus.shutdown()
+
+        for _ in range(max(0, self._max_retries)):
+            if not self._is_running:
+                return False
+            time.sleep(max(0.0, self._retry_delay))
+            if self._open_buses() and hasattr(self.input_bus, "recv") and hasattr(
+                self.output_bus, "send"
+            ):
+                return True
+                # Otherwise, keep trying
+        return False
 
 
 class CANManager(QObject):

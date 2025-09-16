@@ -313,14 +313,99 @@ def test_bus_off_condition_reported(monkeypatch):
     assert "bus off" in error_message.lower()
 
 
-@pytest.mark.skip(reason="NFR-REL-001 auto-recovery not implemented yet")
 def test_auto_recovery_after_bus_off(monkeypatch):
     """
     REQ-NFR-REL-001: On bus-off, system attempts to re-open the channel after a delay
     and resumes retransmission up to N retries. This is a skeleton test to be
     implemented alongside retry logic in CANManager/CANWorker.
     """
-    # Plan: simulate recv raising CanError('bus off') for the first iteration,
-    # then succeed and verify that frames flow again after a retry.
-    # Implementation pending retry mechanism.
-    pass
+    # First input bus will raise bus-off once; after recovery, a new input bus
+    # will successfully return a message. Output buses only need to accept send().
+
+    # Capture retransmissions via output bus send()
+    retransmitted = []
+    evt = threading.Event()
+
+    class FailingOnceInputBus:
+        def __init__(self):
+            self._raised = False
+
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
+            if not self._raised:
+                self._raised = True
+                raise can.CanError("bus off")
+            # Should not be called again on this instance, as recovery reopens buses
+            time.sleep(0.01)
+            return None
+
+        def shutdown(self):
+            return None
+
+    class RecoveredInputBus:
+        def __init__(self, msg: can.Message):
+            self._msg = msg
+            self._served = False
+
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
+            # Return one message, then None
+            if not self._served:
+                self._served = True
+                return self._msg
+            time.sleep(0.01)
+            return None
+
+        def shutdown(self):
+            return None
+
+    class DummyOutputBus:
+        def send(self, msg):  # noqa: ARG002
+            retransmitted.append(msg)
+            evt.set()
+            return None
+
+        def shutdown(self):
+            return None
+
+    # Prepare sequence of Bus() creations: input fail, output, input recovered, output
+    created = []
+    recovery_msg = can.Message(arbitration_id=0x555, data=[9, 9, 9])
+
+    def bus_factory(**kwargs):  # noqa: ARG001
+        # Track order: in0, out0, in1, out1
+        if len(created) == 0:
+            created.append("in0")
+            return FailingOnceInputBus()
+        if len(created) == 1:
+            created.append("out0")
+            return DummyOutputBus()
+        if len(created) == 2:
+            created.append("in1")
+            return RecoveredInputBus(recovery_msg)
+        created.append("out1")
+        return DummyOutputBus()
+
+    monkeypatch.setattr(can.interface, "Bus", bus_factory)
+
+    # Use small retry delay to speed up test
+    input_config = {"interface": "virtual", "channel": "vcan0"}
+    output_config = {"interface": "virtual", "channel": "vcan1"}
+    worker = CANWorker(
+        input_config,
+        output_config,
+        {},
+        retry_on_busoff=True,
+        max_retries=2,
+        retry_delay=0.05,
+    )
+
+    t = threading.Thread(target=worker.run, daemon=True)
+    t.start()
+
+    # Wait until a retransmission happens after recovery
+    assert evt.wait(timeout=2.0), "Did not observe retransmission after recovery"
+
+    worker.stop()
+    t.join(timeout=1.0)
+
+    assert len(retransmitted) >= 1
+    assert retransmitted[0].arbitration_id == recovery_msg.arbitration_id

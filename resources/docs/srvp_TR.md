@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 32 passed, 0 failed, 1 skipped (total 33)
-- Requirements: 24 verified, 0 failed, 13 pending (total 37)
+- Tests: 33 passed, 0 failed, 0 skipped (total 33)
+- Requirements: 25 verified, 0 failed, 12 pending (total 37)
 
 ## Requirements Status
 
@@ -45,7 +45,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-NFR-POR-002 | [ ] Not Started |  |
 | REQ-NFR-POR-003 | [ ] Not Started |  |
 | REQ-NFR-POR-004 | [ ] Not Started |  |
-| REQ-NFR-REL-001 | [ ] Not Started | tests/test_can_logic.py::test_auto_recovery_after_bus_off |
+| REQ-NFR-REL-001 | [x] Verified | tests/test_can_logic.py::test_auto_recovery_after_bus_off |
 | REQ-NFR-REL-002 | [ ] Not Started |  |
 | REQ-NFR-REL-003 | [ ] Not Started |  |
 | REQ-NFR-REL-005 | [ ] Not Started |  |
@@ -219,9 +219,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-NFR-REL-001
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ `tests/test_can_logic.py::test_auto_recovery_after_bus_off` — skipped
+  - ✅ `tests/test_can_logic.py::test_auto_recovery_after_bus_off` — passed
 
 ### REQ-NFR-REL-002
 
