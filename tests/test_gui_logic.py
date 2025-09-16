@@ -127,6 +127,7 @@ def test_two_distinct_selectors_for_channels(qapp):
 def test_same_channel_selection_is_prevented(qapp, monkeypatch):
     """
     REQ-FUNC-INT-003: Same channel for input and output triggers an error and prevents start.
+    REQ-NFR-USA-004: Error message is clear and actionable for the user.
     """
     win = MainWindow()
 
@@ -344,3 +345,40 @@ def test_about_dialog_contains_disclaimer(qapp, monkeypatch):
     assert ("not be used to control safety-critical systems" in normalized) or (
         "safety-critical" in normalized
     )
+
+
+def test_mapping_error_message_is_clear(qapp, monkeypatch):
+    """
+    REQ-NFR-USA-004: Error messages and UI feedback SHALL be clear and actionable.
+    Trigger a mapping validation error and verify the shown message indicates the cause.
+    """
+    win = MainWindow()
+
+    # Prepare valid channels so the flow reaches mapping parsing
+    channels = [
+        {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+        {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+    ]
+    win._populate_channel_selectors(channels)
+    win.input_channel_combo.setCurrentIndex(0)
+    win.output_channel_combo.setCurrentIndex(1)
+
+    # Add an invalid mapping row to provoke RuleParsingError
+    win.mapping_table.setRowCount(1)
+    win.mapping_table.setItem(0, 0, QTableWidgetItem("GHI"))
+    win.mapping_table.setItem(0, 1, QTableWidgetItem("200"))
+
+    captured = []
+
+    def fake_error(title, text):
+        captured.append((title, text))
+
+    monkeypatch.setattr(win, "_show_error_message", fake_error)
+
+    # Act: attempt to start, should hit mapping error and not start
+    win._on_start_stop_clicked()
+
+    assert captured, "Expected an error message for invalid mapping"
+    title, text = captured[-1]
+    assert "Invalid ID in row" in text or "Mapping Error" in title
+    assert win.is_running is False

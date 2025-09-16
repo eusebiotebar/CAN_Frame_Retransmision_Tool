@@ -311,3 +311,16 @@ def test_bus_off_condition_reported(monkeypatch):
     assert error_message is not None
     assert "Error in CAN worker" in error_message
     assert "bus off" in error_message.lower()
+
+
+@pytest.mark.skip(reason="NFR-REL-001 auto-recovery not implemented yet")
+def test_auto_recovery_after_bus_off(monkeypatch):
+    """
+    REQ-NFR-REL-001: On bus-off, system attempts to re-open the channel after a delay
+    and resumes retransmission up to N retries. This is a skeleton test to be
+    implemented alongside retry logic in CANManager/CANWorker.
+    """
+    # Plan: simulate recv raising CanError('bus off') for the first iteration,
+    # then succeed and verify that frames flow again after a retry.
+    # Implementation pending retry mechanism.
+    pass

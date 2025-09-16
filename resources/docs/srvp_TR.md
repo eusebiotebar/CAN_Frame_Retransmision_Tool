@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 31 passed, 0 failed, 0 skipped (total 31)
-- Requirements: 23 verified, 0 failed, 14 pending (total 37)
+- Tests: 32 passed, 0 failed, 1 skipped (total 33)
+- Requirements: 24 verified, 0 failed, 13 pending (total 37)
 
 ## Requirements Status
 
@@ -45,7 +45,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-NFR-POR-002 | [ ] Not Started |  |
 | REQ-NFR-POR-003 | [ ] Not Started |  |
 | REQ-NFR-POR-004 | [ ] Not Started |  |
-| REQ-NFR-REL-001 | [ ] Not Started |  |
+| REQ-NFR-REL-001 | [ ] Not Started | tests/test_can_logic.py::test_auto_recovery_after_bus_off |
 | REQ-NFR-REL-002 | [ ] Not Started |  |
 | REQ-NFR-REL-003 | [ ] Not Started |  |
 | REQ-NFR-REL-005 | [ ] Not Started |  |
@@ -55,7 +55,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-NFR-USA-001 | [ ] Not Started |  |
 | REQ-NFR-USA-002 | [x] Verified | tests/test_gui_logic.py::test_ui_timestamps_include_milliseconds |
 | REQ-NFR-USA-003 | [ ] Not Started |  |
-| REQ-NFR-USA-004 | [ ] Not Started |  |
+| REQ-NFR-USA-004 | [x] Verified | tests/test_gui_logic.py::test_same_channel_selection_is_prevented, tests/test_gui_logic.py::test_mapping_error_message_is_clear |
 
 ## Details
 
@@ -221,7 +221,7 @@ This document summarizes the latest test run and the verification status of the 
 
 - Status: [ ] Not Started
 - Tests:
-  - ➖ No tests mapped yet
+  - ➖ `tests/test_can_logic.py::test_auto_recovery_after_bus_off` — skipped
 
 ### REQ-NFR-REL-002
 
@@ -279,6 +279,7 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-NFR-USA-004
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_same_channel_selection_is_prevented` — passed
+  - ✅ `tests/test_gui_logic.py::test_mapping_error_message_is_clear` — passed
