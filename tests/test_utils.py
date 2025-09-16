@@ -1,6 +1,10 @@
+import sys
+from pathlib import Path
+
 import pytest
 
-from core.utils import RuleParsingError, parse_rewrite_rules
+import core.utils as utils_mod
+from core.utils import RuleParsingError, format_can_frame, get_resource_path, parse_rewrite_rules
 
 
 def test_parse_valid_rules():
@@ -79,3 +83,38 @@ def test_malformed_hex_prefix():
     data_malformed = [("0x100", "0xG")]
     with pytest.raises(RuleParsingError):
         parse_rewrite_rules(data_malformed)
+
+
+def test_get_resource_path_dev_mode(monkeypatch):
+    """When not frozen, resources resolve relative to project root (parent of 'core')."""
+    # Ensure non-frozen
+    monkeypatch.delenv("PYINSTALLER_TEST", raising=False)
+    monkeypatch.setattr(sys, "frozen", False, raising=False)
+
+    # Expected base is parent of core package directory
+    core_file = Path(utils_mod.__file__).resolve()
+    expected_base = core_file.parents[1]
+
+    p = get_resource_path("resources", "images", "app_icon.ico")
+    assert str(p).startswith(str(expected_base))
+    # Joining behavior should be correct even if file may not exist
+    assert p.as_posix().endswith("resources/images/app_icon.ico")
+
+
+def test_get_resource_path_frozen_mode(monkeypatch, tmp_path):
+    """When frozen, path resolves under sys._MEIPASS."""
+    # Simulate PyInstaller environment
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "_MEIPASS", str(tmp_path), raising=False)
+
+    p = get_resource_path("data", "file.txt")
+    assert str(p).startswith(str(tmp_path))
+    assert p.as_posix().endswith("data/file.txt")
+
+
+def test_format_can_frame():
+    """format_can_frame returns expected string with hex data spacing."""
+    frame = {"id": 0x1A2, "data": bytes([0x00, 0xAB, 0x7F])}
+    s = format_can_frame(frame)
+    assert "ID=0x1A2" in s
+    assert "DATA=00 AB 7F" in s

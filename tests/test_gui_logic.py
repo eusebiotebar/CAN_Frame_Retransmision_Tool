@@ -4,6 +4,7 @@ Also covers selected NFRs where feasible via GUI-level checks.
 """
 
 import threading
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -167,6 +168,48 @@ def test_status_indicator_changes(qapp, monkeypatch):
     assert win.status_label.text() == "Listening"
     # Basic check on style change applied
     assert "background-color: green" in win.status_indicator.styleSheet()
+
+
+def test_set_default_log_path_non_frozen(qapp, monkeypatch, tmp_path):
+    """Default log path is generated under CWD/LOGS when not frozen."""
+    win = MainWindow()
+
+    # Simulate non-frozen and temporary CWD
+    monkeypatch.setattr(gui_mod.sys, "frozen", False, raising=False)
+    monkeypatch.chdir(tmp_path)
+
+    win._set_default_log_path()
+    text = win.log_file_path_edit.text()
+    assert text
+    p = Path(text)
+    assert p.parent.name == "LOGS"
+    assert p.suffix == ".csv"
+
+
+def test_get_rewrite_rules_error_path_selects_row(qapp, monkeypatch):
+    """On RuleParsingError, GUI selects the failing row and shows a clear error."""
+    win = MainWindow()
+
+    # Insert an invalid row to trigger error on parse
+    win.mapping_table.setRowCount(2)
+    win.mapping_table.setItem(0, 0, QTableWidgetItem("100"))
+    win.mapping_table.setItem(0, 1, QTableWidgetItem("200"))
+    win.mapping_table.setItem(1, 0, QTableWidgetItem("GHI"))
+    win.mapping_table.setItem(1, 1, QTableWidgetItem("1"))
+
+    captured = []
+
+    def fake_error(title, text):
+        captured.append((title, text))
+
+    monkeypatch.setattr(win, "_show_error_message", fake_error)
+
+    rules = win._get_rewrite_rules()
+    assert rules is None
+    # Error message was shown
+    assert captured and ("Mapping Error" in captured[-1][0])
+    # Failing row is selected (row index from RuleParsingError)
+    assert win.mapping_table.currentRow() == 1
 
 
 def test_latest_frames_view_exists(qapp):
