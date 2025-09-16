@@ -127,6 +127,13 @@ class MainWindow(QMainWindow):
         self.can_manager.error_occurred.connect(self._handle_error)
         self.can_manager.frame_received.connect(self._add_received_frame_to_view)
         self.can_manager.frame_retransmitted.connect(self._add_transmitted_frame_to_view)
+        # Recovery lifecycle to inform user about reconnect attempts
+        self.can_manager.recovery_started.connect(
+            lambda: self.update_status("Reconnecting…", "orange")
+        )
+        self.can_manager.recovery_succeeded.connect(
+            lambda: self.update_status("Retransmitting", "green")
+        )
         self.start_stop_button.clicked.connect(self._on_start_stop_clicked)
         self.add_rule_button.clicked.connect(self._on_add_rule)
         self.delete_rule_button.clicked.connect(self._on_delete_rule)

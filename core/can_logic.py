@@ -21,6 +21,10 @@ class CANWorker(QObject):
     frame_received = pyqtSignal(object)
     frame_retransmitted = pyqtSignal(object)
     error_occurred = pyqtSignal(str)
+    # Recovery lifecycle signals
+    recovery_started = pyqtSignal()
+    recovery_succeeded = pyqtSignal()
+    recovery_failed = pyqtSignal()
     finished = pyqtSignal()
 
     def __init__(self, input_config, output_config, rewrite_rules,
@@ -38,6 +42,8 @@ class CANWorker(QObject):
         self._max_retries = max_retries
         self._retry_delay = retry_delay
         self._last_open_error: Exception | None = None
+        # Track consecutive bus-off recoveries to enforce max retries across iterations
+        self._busoff_streak: int = 0
 
     def run(self):
         """The main retransmission loop."""
@@ -51,6 +57,8 @@ class CANWorker(QObject):
                     assert self.input_bus is not None
                     assert self.output_bus is not None
                     msg = self.input_bus.recv(timeout=0.5)
+                    # Successful receive: reset bus-off streak
+                    self._busoff_streak = 0
                 except Exception as e:  # Handle transient CAN errors such as bus-off
                     # REQ-NFR-REL-001: attempt auto-recovery when bus-off occurs or input bus broken
                     text = str(e).lower()
@@ -58,11 +66,20 @@ class CANWorker(QObject):
                         e, (can.CanError, AttributeError)
                     )
                     if self._retry_on_busoff and looks_bus_off:
+                        # Enforce maximum consecutive recovery attempts
+                        if self._busoff_streak >= max(0, self._max_retries):
+                            self.recovery_failed.emit()
+                            raise can.CanError("bus off") from e
+                        self._busoff_streak += 1
+                        # Inform listeners that recovery will be attempted
+                        self.recovery_started.emit()
                         recovered = self._attempt_recovery()
                         if recovered:
+                            self.recovery_succeeded.emit()
                             # Continue loop and try receiving again
                             continue
                         # If not recovered, escalate as bus-off for consistent reporting
+                        self.recovery_failed.emit()
                         raise can.CanError("bus off") from e
                     # Propagate to outer handler
                     raise
@@ -154,6 +171,10 @@ class CANManager(QObject):
     frame_received = pyqtSignal(object)
     frame_retransmitted = pyqtSignal(object)
     error_occurred = pyqtSignal(str)
+    # Forwarded worker recovery signals
+    recovery_started = pyqtSignal()
+    recovery_succeeded = pyqtSignal()
+    recovery_failed = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -339,6 +360,10 @@ class CANManager(QObject):
         self.worker.frame_received.connect(self.frame_received)
         self.worker.frame_retransmitted.connect(self.frame_retransmitted)
         self.worker.error_occurred.connect(self.error_occurred)
+        # Forward recovery lifecycle
+        self.worker.recovery_started.connect(self.recovery_started)
+        self.worker.recovery_succeeded.connect(self.recovery_succeeded)
+        self.worker.recovery_failed.connect(self.recovery_failed)
 
         # Connect worker signals to logger if active
         if self._frame_logger and self._frame_logger.is_logging:

@@ -409,3 +409,62 @@ def test_auto_recovery_after_bus_off(monkeypatch):
 
     assert len(retransmitted) >= 1
     assert retransmitted[0].arbitration_id == recovery_msg.arbitration_id
+
+
+def test_recovery_exhaustion_emits_error(monkeypatch):
+    """
+    REQ-NFR-REL-001 (failure path): If recovery fails after N retries,
+    the worker emits an error indicating bus-off and stops.
+    """
+
+    class FailingInputBus:
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
+            raise can.CanError("bus off")
+
+        def shutdown(self):
+            return None
+
+    class DummyOutputBus:
+        def send(self, msg):  # noqa: ARG002
+            return None
+
+        def shutdown(self):
+            return None
+
+    # Always return a failing input bus and dummy output bus (no recovery possible)
+    calls = []
+
+    def bus_factory(**kwargs):  # noqa: ARG001
+        if len(calls) % 2 == 0:
+            calls.append("in")
+            return FailingInputBus()
+        calls.append("out")
+        return DummyOutputBus()
+
+    monkeypatch.setattr(can.interface, "Bus", bus_factory)
+
+    input_config = {"interface": "virtual", "channel": "vcan0"}
+    output_config = {"interface": "virtual", "channel": "vcan1"}
+    worker = CANWorker(
+        input_config,
+        output_config,
+        {},
+        retry_on_busoff=True,
+        max_retries=2,
+        retry_delay=0.02,
+    )
+
+    error_msg = None
+    evt = threading.Event()
+
+    def on_err(msg):
+        nonlocal error_msg
+        error_msg = msg
+        evt.set()
+
+    worker.error_occurred.connect(on_err)
+
+    # Run synchronously; error should be emitted and run should return
+    worker.run()
+
+    assert error_msg is not None and "bus off" in error_msg.lower()
