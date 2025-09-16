@@ -79,6 +79,7 @@ fi
 
 # Run tests
 echo "🏃 Running pytest..."
+export QT_QPA_PLATFORM=${QT_QPA_PLATFORM:-offscreen}
 python -m pytest "${pytest_args[@]}"
 
 # Run linting if requested
