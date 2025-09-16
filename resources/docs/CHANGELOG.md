@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-09-16
+
+### Added (0.8.0)
+
+- **SRVP Automation Script**: New `scripts/update_srvp.py` for automated test result integration
+  - Automatically runs pytest and generates JSON test reports
+  - Extracts requirement IDs from test docstrings using flexible regex patterns
+  - Updates SRVP document with checkbox format for verified/failed requirements (`\[x] Verified`, `\[x] Failed`)
+  - Comprehensive error handling and debug output for traceability
+  - Saves updated SRVP document to `resources/docs/srvp_test.md`
+- **Comprehensive Functional Testing**: Complete test suite for core CAN functionality
+  - Virtual CAN bus testing with `test_can_logic.py` covering all REQ-FUNC-LOG requirements
+  - GUI logic testing with `test_gui_logic.py` for interface and utility functions
+  - Thread-safe signal testing using `threading.Event` with Qt `DirectConnection`
+  - Mock-based testing for hardware detection and channel management
+
+### Changed (0.8.0)
+
+- **Simplified CI Pipeline**: Removed Black formatter from continuous integration
+  - Eliminated Black dependency from `pyproject.toml` dev dependencies
+  - Removed Black formatting checks from `scripts/test.sh` and `scripts/test.ps1`
+  - Updated CI instructions to only require ruff and mypy verification
+  - Streamlined linting process with single ruff check instead of dual ruff/Black validation
+
+### Fixed (0.8.0)
+
+- **Code Quality and Formatting**: Resolved all formatting and linting issues
+  - Fixed line length violations in `tests/test_can_logic.py` to comply with ruff E501 rule
+  - Resolved lambda function issues causing ruff B023 warnings in SRVP script
+  - Corrected regex patterns for better docstring extraction and status matching
+  - Fixed encoding issues in `scripts/update_srvp.py` for reliable cross-platform execution
+- **Test Infrastructure**: Enhanced test reliability and maintainability
+  - Removed duplicate test decorators and formatting inconsistencies
+  - Fixed signal connection syntax for better Qt compatibility
+  - Improved import organization and code structure in test files
+
+### Removed (0.8.0)
+
+- **Black Formatter Dependency**: Complete removal of Black from development workflow
+  - Removed Black configuration section from `pyproject.toml`
+  - Eliminated Black installation from test scripts
+  - Updated development documentation to reflect simplified linting approach
+
+### Technical Improvements (0.8.0)
+
+- **Enhanced Development Experience**: More reliable and faster CI execution
+  - Eliminates Black memory safety issues with Python 3.12.5
+  - Reduces CI complexity and potential failure points
+  - Maintains code quality standards with ruff linting alone
+  - Faster CI execution without redundant formatting checks
+- **Test Coverage**: Comprehensive functional requirement verification
+  - All REQ-FUNC-LOG and REQ-FUNC-INT requirements now have automated tests
+  - Virtual CAN hardware simulation for isolated testing environment
+  - Robust error handling and signal delivery verification
+
+### Benefits (0.8.0)
+
+- **Simplified Maintenance**: Reduced tool complexity while maintaining code quality
+- **Improved Reliability**: Elimination of CI failures due to Black formatting conflicts
+- **Enhanced Traceability**: Automated SRVP document updates link tests to requirements
+- **Better Testing**: Comprehensive functional test coverage for all core features
+
+---
+
 ## [0.7.0] - 2025-09-15
 
 ### Added (0.7.0)
