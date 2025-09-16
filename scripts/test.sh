@@ -86,10 +86,7 @@ if [[ "$LINTING" == true ]] || [[ "$ALL" == true ]]; then
     echo "🧹 Running linting checks..."
     
     # Install linting dependencies
-    python -m pip install --upgrade black ruff
-    
-    echo "  📝 Checking code formatting with black..."
-    python -m black --check . || (echo 'Black formatting differences:' && python -m black --diff . && exit 1)
+    python -m pip install --upgrade ruff
     
     echo "  🔍 Running ruff linter..."
     python -m ruff check .

@@ -56,10 +56,7 @@ if ($Linting -or $All) {
     Write-Host "Running linting checks..." -ForegroundColor Blue
     
     # Install linting dependencies
-    py -m pip install --upgrade black ruff
-    
-    Write-Host "  Checking code formatting with black..." -ForegroundColor Cyan
-    py -m black --check --diff .
+    py -m pip install --upgrade ruff
     
     Write-Host "  Running ruff linter..." -ForegroundColor Cyan
     py -m ruff check .

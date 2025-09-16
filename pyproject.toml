@@ -20,7 +20,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest",
-  "black",
   "mypy",
   "ruff",
   "pyinstaller"
@@ -38,10 +37,6 @@ core = ["*.ui"]
 
 [tool.setuptools.dynamic]
 version = { file = "core/version_info.txt" }
-
-[tool.black]
-line-length = 100
-target-version = ["py310", "py311", "py312"]
 
 [tool.ruff]
 line-length = 100
