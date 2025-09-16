@@ -56,6 +56,9 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PAT }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.6'
       - name: Extract version from tag
         id: version
         run: |
@@ -72,6 +75,34 @@ jobs:
           echo "section<<EOF" >> $GITHUB_OUTPUT
           cat section.md >> $GITHUB_OUTPUT
           echo EOF >> $GITHUB_OUTPUT
+      - name: Prepare release metadata (author/date)
+        id: relmeta
+        run: |
+          AUTHOR="${{ github.actor }}"
+          DATE_ISO=$(git log -1 --format=%aI ${{ steps.version.outputs.tag }} || git log -1 --format=%aI)
+          # Convert to YYYY-MM-DD; fallback to today if conversion fails
+          DATE=$(date -u -d "$DATE_ISO" +%Y-%m-%d 2>/dev/null || date -u +%Y-%m-%d)
+          echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+      - name: Install system dependencies for PyQt6 (headless)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 \
+            libgl1 \
+            libxkbcommon-x11-0
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          pip install pytest-json-report
+      - name: Generate SRVP Test Report (with release metadata)
+        env:
+          RELEASE_AUTHOR: ${{ steps.relmeta.outputs.author }}
+          RELEASE_DATE: ${{ steps.relmeta.outputs.date }}
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python scripts/update_srvp.py
       - name: Download Python artifacts
         uses: actions/download-artifact@v4
         with:
