@@ -4,12 +4,18 @@ Update SRVP Document with Test Results
 ====================================
 
 This script runs pytest tests and updates the SRVP document with test verification results.
+
+Enhancements:
+- Generates a standalone SRVP Test Report (srvp_TR.md) with a YAML front matter including
+    docType, docSubtitle, docVersion, docAuthor, and createdDate derived from release metadata.
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent.parent
@@ -100,6 +106,68 @@ def extract_requirement_ids_from_docs() -> set[str]:
     return ids
 
 
+def _read_doc_author_from_srvp() -> str | None:
+    """Best-effort extraction of docAuthor from SRVP front matter as fallback."""
+    try:
+        if SRVP_PATH.exists():
+            txt = SRVP_PATH.read_text(encoding="utf-8")
+            m = re.search(r"^docAuthor:\s*(.+)$", txt, flags=re.MULTILINE)
+            if m:
+                return m.group(1).strip()
+    except Exception:
+        pass
+    return None
+
+
+def _git_cmd_output(args: list[str]) -> str | None:
+    try:
+        out = subprocess.check_output(["git", *args], cwd=ROOT_DIR, text=True).strip()
+        return out
+    except Exception:
+        return None
+
+
+def _get_release_metadata() -> tuple[str, str, str]:
+    """Return (version, author, date) for the report front matter.
+
+        Strategy:
+        - version: core.version.__version__ (from version_info.txt), fallback "0.0.0"
+        - author: env RELEASE_AUTHOR or GITHUB_ACTOR, then SRVP docAuthor,
+            then git user.name, else "Unknown"
+        - date: env RELEASE_DATE (YYYY-MM-DD), then latest commit author-date,
+            else today in YYYY-MM-DD
+    """
+    # Version
+    try:
+        from core.version import __version__ as ver
+    except Exception:
+        ver = "0.0.0"
+
+    # Author
+    author = (
+        os.environ.get("RELEASE_AUTHOR")
+        or os.environ.get("GITHUB_ACTOR")
+        or _read_doc_author_from_srvp()
+        or _git_cmd_output(["config", "user.name"])  # local git user
+        or "Unknown"
+    )
+
+    # Date
+    date = os.environ.get("RELEASE_DATE")
+    if not date:
+        # Try latest commit author date (ISO 8601); convert to YYYY-MM-DD
+        iso = _git_cmd_output(["log", "-1", "--format=%aI"])  # e.g., 2025-09-16T09:58:12+00:00
+        if iso:
+            try:
+                date = datetime.fromisoformat(iso.replace("Z", "+00:00")).date().isoformat()
+            except Exception:
+                date = None
+    if not date:
+        date = datetime.now().date().isoformat()
+
+    return ver, author, date
+
+
 def extract_req_ids_from_docstrings():
     """Extract requirement IDs from test function docstrings."""
     print("Extracting requirement IDs from test files...")
@@ -178,7 +246,18 @@ def build_markdown_report(
     req_failed = sum(1 for rid in all_req_ids_sorted if status_of(rid).endswith("Failed"))
     pending = total_reqs - verified - req_failed
 
+    # Front matter with release metadata
+    version, author, date = _get_release_metadata()
+
     lines: list[str] = []
+    lines.append("---")
+    lines.append("docType: Software Requirements Verification Plan Report (SRVPR)")
+    lines.append("docSubtitle: CAN Frame Retransmission Tool")
+    lines.append(f"docVersion: {version}")
+    lines.append(f"docAuthor: {author}")
+    lines.append(f"createdDate: {date}")
+    lines.append("---")
+    lines.append("")
     lines.append("# Test Report - SRVP Functional Requirements")
     lines.append("")
     lines.append(
