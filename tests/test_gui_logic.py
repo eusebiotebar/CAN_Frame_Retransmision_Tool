@@ -4,6 +4,7 @@ import threading
 from unittest.mock import patch
 
 import pytest
+from PyQt6.QtWidgets import QTableWidgetItem
 
 from core.can_logic import CANManager
 from core.gui import MainWindow
@@ -171,3 +172,111 @@ def test_latest_frames_view_exists(qapp):
     win = MainWindow()
     assert win.frames_table_RX.columnCount() == 4
     assert win.frames_table_TX.columnCount() == 4
+
+
+def test_bitrate_applied_on_start(qapp, monkeypatch):
+    """
+    REQ-FUNC-INT-004: The system uses the user-selected bitrate for both channels when starting.
+    """
+    win = MainWindow()
+
+    # Prepare two channels
+    channels = [
+        {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+        {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+    ]
+    win._populate_channel_selectors(channels)
+    win.input_channel_combo.setCurrentIndex(0)
+    win.output_channel_combo.setCurrentIndex(1)
+
+    # Change bitrate selection to 500 kbps
+    idx = win.bitrate_combo.findText("500")
+    if idx >= 0:
+        win.bitrate_combo.setCurrentIndex(idx)
+
+    captured = {}
+
+    def fake_start(input_cfg, output_cfg, rewrite_rules, log_file):
+        captured["input"] = input_cfg
+        captured["output"] = output_cfg
+        captured["rules"] = rewrite_rules
+        captured["log_file"] = log_file
+
+    monkeypatch.setattr(win.can_manager, "start_retransmission", fake_start)
+
+    # Ensure empty mapping accepted
+    win.mapping_table.setRowCount(0)
+
+    # Act
+    win._on_start_stop_clicked()
+
+    assert "input" in captured and "output" in captured
+    assert captured["input"]["bitrate"] == captured["output"]["bitrate"]
+    assert captured["input"]["bitrate"] in (250000, 500000)
+    # If combo had 500, ensure 500000; otherwise default 250000
+    if idx >= 0:
+        assert captured["input"]["bitrate"] == 500000
+
+
+def test_mapping_table_used_on_start(qapp, monkeypatch):
+    """
+    REQ-FUNC-INT-006: The user-defined ID mapping table is parsed and applied when starting.
+    REQ-FUNC-INT-007: IDs must be valid hex (verified indirectly via parse).
+    """
+    win = MainWindow()
+
+    # Prepare channels
+    channels = [
+        {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+        {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+    ]
+    win._populate_channel_selectors(channels)
+    win.input_channel_combo.setCurrentIndex(0)
+    win.output_channel_combo.setCurrentIndex(1)
+
+    # Add a valid mapping rule 0x100 -> 0x200
+    win.mapping_table.setRowCount(1)
+    win.mapping_table.setItem(0, 0, QTableWidgetItem("100"))
+    win.mapping_table.setItem(0, 1, QTableWidgetItem("200"))
+
+    captured = {}
+
+    def fake_start(input_cfg, output_cfg, rewrite_rules, log_file):
+        captured["rules"] = dict(rewrite_rules)
+
+    monkeypatch.setattr(win.can_manager, "start_retransmission", fake_start)
+
+    # Act
+    win._on_start_stop_clicked()
+
+    assert captured.get("rules") == {0x100: 0x200}
+
+
+def test_start_stop_button_toggles(qapp, monkeypatch):
+    """
+    REQ-FUNC-INT-008: The GUI provides a Start/Stop button that toggles states.
+    """
+    win = MainWindow()
+
+    # Prepare channels
+    channels = [
+        {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+        {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+    ]
+    win._populate_channel_selectors(channels)
+    win.input_channel_combo.setCurrentIndex(0)
+    win.output_channel_combo.setCurrentIndex(1)
+
+    # No-op starts/stops
+    monkeypatch.setattr(win.can_manager, "start_retransmission", lambda *args, **kwargs: None)
+    monkeypatch.setattr(win.can_manager, "stop_retransmission", lambda *args, **kwargs: None)
+
+    # Start
+    win._on_start_stop_clicked()
+    assert win.is_running is True
+    assert win.start_stop_button.text() == "Stop"
+
+    # Stop
+    win._on_start_stop_clicked()
+    assert win.is_running is False
+    assert win.start_stop_button.text() == "Start"

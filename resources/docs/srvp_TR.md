@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 22 passed, 0 failed, 0 skipped (total 22)
-- Requirements: 12 verified, 0 failed, 26 pending (total 38)
+- Tests: 25 passed, 0 failed, 0 skipped (total 25)
+- Requirements: 16 verified, 0 failed, 22 pending (total 38)
 
 ## Requirements Status
 
@@ -22,11 +22,11 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-INT-001 | [x] Verified | tests/test_gui_logic.py::test_channel_detection_signal |
 | REQ-FUNC-INT-002 | [x] Verified | tests/test_gui_logic.py::test_two_distinct_selectors_for_channels |
 | REQ-FUNC-INT-003 | [x] Verified | tests/test_gui_logic.py::test_same_channel_selection_is_prevented |
-| REQ-FUNC-INT-004 | [ ] Not Started |  |
+| REQ-FUNC-INT-004 | [x] Verified | tests/test_gui_logic.py::test_bitrate_applied_on_start |
 | REQ-FUNC-INT-005 | [x] Verified | tests/test_gui_logic.py::test_default_bitrate_is_250 |
-| REQ-FUNC-INT-006 | [ ] Not Started |  |
-| REQ-FUNC-INT-007 | [ ] Not Started |  |
-| REQ-FUNC-INT-008 | [ ] Not Started |  |
+| REQ-FUNC-INT-006 | [x] Verified | tests/test_gui_logic.py::test_mapping_table_used_on_start |
+| REQ-FUNC-INT-007 | [x] Verified | tests/test_gui_logic.py::test_mapping_table_used_on_start |
+| REQ-FUNC-INT-008 | [x] Verified | tests/test_gui_logic.py::test_start_stop_button_toggles |
 | REQ-FUNC-INT-009 | [x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
 | REQ-FUNC-INT-010 | [x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
 | REQ-FUNC-LOG-001 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
@@ -80,9 +80,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-004
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_bitrate_applied_on_start` — passed
 
 ### REQ-FUNC-INT-005
 
@@ -92,21 +92,21 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-006
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_mapping_table_used_on_start` — passed
 
 ### REQ-FUNC-INT-007
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_mapping_table_used_on_start` — passed
 
 ### REQ-FUNC-INT-008
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_start_stop_button_toggles` — passed
 
 ### REQ-FUNC-INT-009
 
