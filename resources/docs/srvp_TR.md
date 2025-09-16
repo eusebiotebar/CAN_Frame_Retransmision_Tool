@@ -19,23 +19,23 @@ This document summarizes the latest test run and the verification status of the 
 
 | Requirement | Status | Tests |
 | --- | --- | --- |
-| REQ-FUNC-INT-001 | \[x] Verified | tests/test_gui_logic.py::test_channel_detection_signal |
-| REQ-FUNC-INT-002 | \[x] Verified | tests/test_gui_logic.py::test_two_distinct_selectors_for_channels |
-| REQ-FUNC-INT-003 | \[x] Verified | tests/test_gui_logic.py::test_same_channel_selection_is_prevented |
+| REQ-FUNC-INT-001 | [x] Verified | tests/test_gui_logic.py::test_channel_detection_signal |
+| REQ-FUNC-INT-002 | [x] Verified | tests/test_gui_logic.py::test_two_distinct_selectors_for_channels |
+| REQ-FUNC-INT-003 | [x] Verified | tests/test_gui_logic.py::test_same_channel_selection_is_prevented |
 | REQ-FUNC-INT-004 | [ ] Not Started |  |
-| REQ-FUNC-INT-005 | \[x] Verified | tests/test_gui_logic.py::test_default_bitrate_is_250 |
+| REQ-FUNC-INT-005 | [x] Verified | tests/test_gui_logic.py::test_default_bitrate_is_250 |
 | REQ-FUNC-INT-006 | [ ] Not Started |  |
 | REQ-FUNC-INT-007 | [ ] Not Started |  |
 | REQ-FUNC-INT-008 | [ ] Not Started |  |
-| REQ-FUNC-INT-009 | \[x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
-| REQ-FUNC-INT-010 | \[x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
-| REQ-FUNC-LOG-001 | \[x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
+| REQ-FUNC-INT-009 | [x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
+| REQ-FUNC-INT-010 | [x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
+| REQ-FUNC-LOG-001 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
 | REQ-FUNC-LOG-002 | [ ] Not Started |  |
-| REQ-FUNC-LOG-003 | \[x] Verified | tests/test_can_logic.py::test_signals_are_emitted_for_frames |
-| REQ-FUNC-LOG-004 | \[x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
-| REQ-FUNC-LOG-005 | \[x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
-| REQ-FUNC-LOG-006 | \[x] Verified | tests/test_can_logic.py::test_retransmission_stops_when_worker_is_stopped |
-| REQ-FUNC-LOG-007 | \[x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
+| REQ-FUNC-LOG-003 | [x] Verified | tests/test_can_logic.py::test_signals_are_emitted_for_frames |
+| REQ-FUNC-LOG-004 | [x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
+| REQ-FUNC-LOG-005 | [x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
+| REQ-FUNC-LOG-006 | [x] Verified | tests/test_can_logic.py::test_retransmission_stops_when_worker_is_stopped |
+| REQ-FUNC-LOG-007 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
 | REQ-FUNC-LOG-008 | [ ] Not Started |  |
 | REQ-FUNC-LOG-009 | [ ] Not Started |  |
 | REQ-FUNC-LOG-010 | [ ] Not Started |  |
@@ -62,19 +62,19 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-001
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_channel_detection_signal` — passed
 
 ### REQ-FUNC-INT-002
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_two_distinct_selectors_for_channels` — passed
 
 ### REQ-FUNC-INT-003
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_same_channel_selection_is_prevented` — passed
 
@@ -86,7 +86,7 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-005
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_default_bitrate_is_250` — passed
 
@@ -110,19 +110,19 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-009
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_status_indicator_changes` — passed
 
 ### REQ-FUNC-INT-010
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_latest_frames_view_exists` — passed
 
 ### REQ-FUNC-LOG-001
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_worker_handles_bus_creation_error` — passed
 
@@ -134,33 +134,33 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-LOG-003
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_signals_are_emitted_for_frames` — passed
 
 ### REQ-FUNC-LOG-004
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted` — passed
   - ✅ `tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches` — passed
 
 ### REQ-FUNC-LOG-005
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted` — passed
   - ✅ `tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches` — passed
 
 ### REQ-FUNC-LOG-006
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_retransmission_stops_when_worker_is_stopped` — passed
 
 ### REQ-FUNC-LOG-007
 
-- Status: \[x] Verified
+- Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_worker_handles_bus_creation_error` — passed
 

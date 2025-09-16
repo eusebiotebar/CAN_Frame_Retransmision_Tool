@@ -187,8 +187,8 @@ def extract_req_ids_from_docstrings():
             # Full nodeid format to match pytest output
             full_test_name = f"tests/{test_file.name}::{test_name}"
 
-            # Find requirement IDs in the docstring
-            req_ids = re.findall(r"REQ-FUNC-\w+-\d{3}", docstring)
+            # Find requirement IDs in the docstring (support FUNC, NFR, etc.)
+            req_ids = re.findall(r"REQ-(?:[A-Z]+-)+\d{3}", docstring)
             for req_id in req_ids:
                 if req_id not in req_to_tests:
                     req_to_tests[req_id] = []
@@ -210,10 +210,10 @@ def get_requirement_statuses(test_outcomes, req_to_tests):
 
         # A requirement is 'Failed' if any of its tests fail.
         if "failed" in outcomes:
-            req_statuses[req_id] = "\\[x] Failed"
+            req_statuses[req_id] = "[x] Failed"
         # It is 'Verified' only if all of its tests pass.
         elif outcomes and all(o == "passed" for o in outcomes):
-            req_statuses[req_id] = "\\[x] Verified"
+            req_statuses[req_id] = "[x] Verified"
         # Otherwise, the status is not determined
         else:
             print(f"    No clear status for {req_id} (outcomes: {outcomes})")
@@ -330,8 +330,7 @@ def main():
         return 1
 
     if not SRVP_PATH.exists():
-        print(f"ERROR: SRVP file not found: {SRVP_PATH}")
-        return 1
+        print(f"WARNING: SRVP file not found: {SRVP_PATH} (continuing without it)")
 
     if not TESTS_DIR.exists():
         print(f"ERROR: Tests directory not found: {TESTS_DIR}")
