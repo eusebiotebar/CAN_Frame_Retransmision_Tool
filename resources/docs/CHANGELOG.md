@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-09-16
+
+### Added (0.9.0)
+
+- Standalone SRVP Test Report is now published with each release
+  - `resources/docs/srvp_TR.md` is attached as a Release asset (auto-release workflow)
+
+### Changed (0.9.0)
+
+- Renamed test report file from `srvp_test.md` to `srvp_TR.md`
+- Updated `scripts/update_srvp.py` to write the report to `resources/docs/srvp_TR.md`
+- Updated `README.md` link to point to the new report filename
+- Updated `release-auto.yml` to include the SRVP Test Report as an additional asset
+
+### Notes (0.9.0)
+
+- This change does not affect application behavior; it improves documentation and release visibility.
+
+---
+
 ## [0.8.0] - 2025-09-16
 
 ### Added (0.8.0)
