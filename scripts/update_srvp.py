@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-Script mejorado para actualizar el documento SRVP con resultados de tests.
-Corrige los problemas identificados en la versión original.
+Update SRVP Document with Test Results
+====================================
+
+This script runs pytest tests and updates the SRVP document with test verification results.
 """
 
 import json
@@ -10,7 +12,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Define paths
 ROOT_DIR = Path(__file__).parent.parent
 SRVP_PATH = ROOT_DIR / "resources" / "docs" / "srvp.md"
 OUTPUT_PATH = ROOT_DIR / "resources" / "docs" / "srvp_test.md"
@@ -54,7 +55,7 @@ def run_tests():
             text=True,
         )
         print(f"Test report generated at {REPORT_PATH}")
-        print("pytest stdout:", result.stdout[-500:])  # Last 500 chars
+        print(f"pytest stdout: {result.stdout}")
         return True
     except subprocess.CalledProcessError as e:
         print(f"ERROR running pytest: {e}")
@@ -99,9 +100,9 @@ def extract_req_ids_from_docstrings():
             # Full nodeid format to match pytest output
             full_test_name = f"tests/{test_file.name}::{test_name}"
 
-            # Find all REQ-FUNC IDs in the docstring
-            covered_reqs = re.findall(r"REQ-FUNC-\w+-\d{3}", docstring)
-            for req_id in covered_reqs:
+            # Find requirement IDs in the docstring
+            req_ids = re.findall(r"REQ-FUNC-\w+-\d{3}", docstring)
+            for req_id in req_ids:
                 if req_id not in req_to_tests:
                     req_to_tests[req_id] = []
                 req_to_tests[req_id].append(full_test_name)
@@ -155,15 +156,15 @@ def update_srvp_document(req_statuses):
         if match:
             req_id = match.group(1)
             old_status = match.group(2)
+
             if req_id in req_statuses:
                 new_status = req_statuses[req_id]
-                # Replace the old status with the new one
-                new_line = line.replace(old_status, new_status)
-                new_lines.append(new_line)
+                updated_line = line.replace(old_status, new_status)
+                new_lines.append(updated_line)
                 print(f"  - Updated {req_id}: {old_status} -> {new_status}")
                 updates_made += 1
             else:
-                new_lines.append(line)  # Keep line as is if no status found
+                new_lines.append(line)
         else:
             new_lines.append(line)
 
@@ -199,16 +200,14 @@ def main():
         print("\n--- DEBUG: TEST OUTCOMES ---")
         for nodeid, outcome in list(test_outcomes.items())[:5]:  # Show first 5
             print(f"  {nodeid}: {outcome}")
-        if len(test_outcomes) > 5:
-            print(f"  ... and {len(test_outcomes) - 5} more")
+        print(f"  ... and {len(test_outcomes) - 5} more")
 
-        # Step 3: Extract requirement mappings
+        # Step 3: Extract requirement IDs from test docstrings
         req_to_tests = extract_req_ids_from_docstrings()
         print("\n--- DEBUG: REQ TO TESTS MAPPING ---")
         for req_id, tests in list(req_to_tests.items())[:5]:  # Show first 5
             print(f"  {req_id}: {tests}")
-        if len(req_to_tests) > 5:
-            print(f"  ... and {len(req_to_tests) - 5} more")
+        print(f"  ... and {len(req_to_tests) - 5} more")
 
         # Step 4: Determine requirement statuses
         req_statuses = get_requirement_statuses(test_outcomes, req_to_tests)
