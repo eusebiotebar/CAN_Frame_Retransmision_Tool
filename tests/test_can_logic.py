@@ -19,7 +19,9 @@ def virtual_can_buses():
     buses.append(
         can.interface.Bus(channel="vcan0", interface="virtual", receive_own_messages=False)
     )
-    buses.append(can.interface.Bus(channel="vcan1", interface="virtual", receive_own_messages=True))
+    buses.append(
+        can.interface.Bus(channel="vcan1", interface="virtual", receive_own_messages=True)
+    )
 
     yield buses
 

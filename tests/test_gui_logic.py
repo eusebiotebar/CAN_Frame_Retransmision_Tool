@@ -52,6 +52,12 @@ def test_parse_incomplete_pair_raises_error():
 
 
 @patch("core.can_logic.CANManager._detect_linux_can_devices", return_value=[])
+
+
+# --- Tests for CANManager channel detection (REQ-FUNC-INT-001) ---
+
+
+@patch("core.can_logic.CANManager._detect_linux_can_devices", return_value=[])
 @patch("core.can_logic.CANManager._detect_windows_can_devices", return_value=[])
 @patch("core.can_logic.CANManager._detect_kvaser_devices")
 def test_channel_detection_signal(mock_detect_kvaser, mock_detect_win, mock_detect_linux):
