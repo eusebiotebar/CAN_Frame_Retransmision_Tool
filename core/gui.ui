@@ -19,8 +19,8 @@
      <layout class="QVBoxLayout" name="vertical_Frames_Layout">
       <item>
        <widget class="QGroupBox" name="frames_group_RX">
-        <property name="title">
-         <string>Últimas Tramas Recibidas</string>
+    <property name="title">
+     <string>Latest Received Frames</string>
         </property>
         <layout class="QVBoxLayout" name="frames_layout">
          <item>
@@ -42,7 +42,7 @@
            </column>
            <column>
             <property name="text">
-             <string>Datos (Hex)</string>
+             <string>Data (Hex)</string>
             </property>
            </column>
           </widget>
@@ -68,8 +68,8 @@
       </item>
       <item>
        <widget class="QGroupBox" name="frames_group_TX">
-        <property name="title">
-         <string>Últimas Tramas Enviadas</string>
+    <property name="title">
+     <string>Latest Transmitted Frames</string>
         </property>
         <layout class="QVBoxLayout" name="frames_layout_2">
          <item>
@@ -91,7 +91,7 @@
            </column>
            <column>
             <property name="text">
-             <string>Datos (Hex)</string>
+             <string>Data (Hex)</string>
             </property>
            </column>
           </widget>
@@ -105,8 +105,8 @@
      <layout class="QVBoxLayout" name="vertical_Control_Layout" stretch="0,0,0,0">
       <item>
        <widget class="QGroupBox" name="connection_group">
-        <property name="title">
-         <string>Configuración de Conexión</string>
+    <property name="title">
+     <string>Connection Settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_connection">
          <item row="1" column="1">
@@ -146,14 +146,14 @@
          <item row="0" column="0">
           <widget class="QLabel" name="label_input_channel">
            <property name="text">
-            <string>Canal de Entrada:</string>
+            <string>Input Channel:</string>
            </property>
           </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_output_channel">
            <property name="text">
-            <string>Canal de Salida:</string>
+            <string>Output Channel:</string>
            </property>
           </widget>
          </item>
@@ -165,20 +165,20 @@
       </item>
       <item>
        <widget class="QGroupBox" name="mapping_group">
-        <property name="title">
-         <string>Mapeo de IDs</string>
+    <property name="title">
+     <string>ID Mapping</string>
         </property>
         <layout class="QVBoxLayout" name="mapping_layout">
          <item>
           <widget class="QTableWidget" name="mapping_table">
+                     <column>
+                        <property name="text">
+                         <string>Original ID (Hex)</string>
+                        </property>
+                     </column>
            <column>
             <property name="text">
-             <string>ID Original (Hex)</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>ID Reescrito (Hex)</string>
+                         <string>Rewritten ID (Hex)</string>
             </property>
            </column>
           </widget>
@@ -204,14 +204,14 @@
            <item>
             <widget class="QPushButton" name="add_rule_button">
              <property name="text">
-              <string>Añadir Regla</string>
+              <string>Add Rule</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="delete_rule_button">
              <property name="text">
-              <string>Eliminar Regla</string>
+              <string>Delete Rule</string>
              </property>
             </widget>
            </item>
@@ -222,8 +222,8 @@
       </item>
       <item>
        <widget class="QGroupBox" name="status_group">
-        <property name="title">
-         <string>Estado</string>
+    <property name="title">
+     <string>Status</string>
         </property>
         <layout class="QHBoxLayout" name="status_layout">
          <item>
@@ -268,7 +268,7 @@
          <item>
           <widget class="QPushButton" name="start_stop_button">
            <property name="text">
-            <string>Iniciar</string>
+            <string>Start</string>
            </property>
           </widget>
          </item>
@@ -277,28 +277,28 @@
       </item>
       <item>
        <widget class="QGroupBox" name="logging_group">
-        <property name="title">
-         <string>Configuración de Logging</string>
+    <property name="title">
+     <string>Logging Settings</string>
         </property>
         <layout class="QGridLayout" name="logging_layout">
          <item row="0" column="0">
           <widget class="QLabel" name="label_log_file">
            <property name="text">
-            <string>Archivo de Log:</string>
+            <string>Log File:</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
           <widget class="QLineEdit" name="log_file_path_edit">
            <property name="placeholderText">
-            <string>Opcional: ruta al archivo de log</string>
+            <string>Optional: path to log file</string>
            </property>
           </widget>
          </item>
          <item row="0" column="2">
           <widget class="QPushButton" name="browse_log_file_button">
            <property name="text">
-            <string>Examinar...</string>
+            <string>Browse...</string>
            </property>
           </widget>
          </item>
@@ -318,20 +318,20 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuAyuda">
-    <property name="title">
-     <string>&amp;Ayuda</string>
-    </property>
-    <addaction name="actionAcerca_de"/>
-   </widget>
+    <widget class="QMenu" name="menuAyuda">
+     <property name="title">
+      <string>&amp;Help</string>
+     </property>
+     <addaction name="actionAcerca_de"/>
+    </widget>
    <addaction name="menuAyuda"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionAcerca_de">
-   <property name="text">
-    <string>&amp;Acerca de...</string>
-   </property>
-  </action>
+    <action name="actionAcerca_de">
+     <property name="text">
+        <string>&amp;About...</string>
+     </property>
+    </action>
  </widget>
  <resources/>
  <connections/>

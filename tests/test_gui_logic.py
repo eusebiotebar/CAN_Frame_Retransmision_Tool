@@ -425,3 +425,48 @@ def test_mapping_error_message_is_clear(qapp, monkeypatch):
     title, text = captured[-1]
     assert "Invalid ID in row" in text or "Mapping Error" in title
     assert win.is_running is False
+
+
+def test_handle_error_resets_ui(qapp, monkeypatch):
+    """_handle_error should stop running state and reset controls and labels without blocking."""
+    win = MainWindow()
+    # Avoid modal dialog during tests
+    monkeypatch.setattr(win, "_show_error_message", lambda *args, **kwargs: None)
+    win.is_running = True
+    win.start_stop_button.setText("Stop")
+    win._set_controls_enabled(False)
+
+    win._handle_error("Some error")
+
+    assert win.is_running is False
+    assert win.start_stop_button.text() == "Start"
+    # Status label should reflect error and indicator should be red
+    assert win.status_label.text() == "Error"
+    assert "background-color: red" in win.status_indicator.styleSheet()
+
+
+def test_browse_log_file_updates_path(qapp, monkeypatch, tmp_path):
+    """Simulate browse dialog to ensure selected path is applied to QLineEdit."""
+    win = MainWindow()
+    target = str(tmp_path / "mylog.csv")
+
+    def fake_getSaveFileName(*args, **kwargs):  # noqa: ARG001
+        return target, "CSV files (*.csv)"
+
+    monkeypatch.setattr(gui_mod.QFileDialog, "getSaveFileName", fake_getSaveFileName)
+
+    win._on_browse_log_file()
+    assert win.log_file_path_edit.text() == target
+
+
+def test_recovery_signals_update_status(qapp):
+    """Recovery signals should update the status label and color accordingly."""
+    win = MainWindow()
+    # Emit signals from the manager and verify UI changes
+    win.can_manager.recovery_started.emit()
+    assert win.status_label.text() == "Reconnecting…"
+    assert "orange" in win.status_indicator.styleSheet()
+
+    win.can_manager.recovery_succeeded.emit()
+    assert win.status_label.text() == "Retransmitting"
+    assert "green" in win.status_indicator.styleSheet()
