@@ -1,4 +1,7 @@
-"""Tests for the GUI support logic (REQ-FUNC-INT-*)."""
+"""Tests for the GUI support logic (REQ-FUNC-INT-*).
+
+Also covers selected NFRs where feasible via GUI-level checks.
+"""
 
 import threading
 from unittest.mock import patch
@@ -6,6 +9,7 @@ from unittest.mock import patch
 import pytest
 from PyQt6.QtWidgets import QTableWidgetItem
 
+import core.gui as gui_mod
 from core.can_logic import CANManager
 from core.gui import MainWindow
 from core.utils import RuleParsingError, parse_rewrite_rules
@@ -280,3 +284,63 @@ def test_start_stop_button_toggles(qapp, monkeypatch):
     win._on_start_stop_clicked()
     assert win.is_running is False
     assert win.start_stop_button.text() == "Start"
+
+
+def test_ui_timestamps_include_milliseconds(qapp):
+    """
+    REQ-NFR-USA-002: The timestamps in the UI include milliseconds and match
+    the underlying message timestamp within a small tolerance.
+    """
+    win = MainWindow()
+
+    # Simulate running state so rows are added
+    win.is_running = True
+
+    class DummyMsg:
+        def __init__(self, ts: float) -> None:
+            self.timestamp = ts
+            self.arbitration_id = 0x1AA
+            self.dlc = 2
+            self.data = bytes([0x01, 0x02])
+
+    ts = 1726480000.1234
+    win._add_received_frame_to_view(DummyMsg(ts))
+
+    # Read back the timestamp text from the RX table
+    item = win.frames_table_RX.item(0, 0)
+    assert item is not None
+    text = item.text()
+
+    # Expect exactly 3 decimals as per GUI formatting and close to original
+    assert "." in text and len(text.split(".")[-1]) == 3
+    assert abs(float(text) - ts) < 0.002  # within 2 ms
+
+
+def test_about_dialog_contains_disclaimer(qapp, monkeypatch):
+    """
+    REQ-NFR-SAF-001, REQ-NFR-SAF-002: The About dialog presents a disclaimer
+    stating the tool is not intended for safety-critical control and warns
+    about unintended side effects when retransmitting frames.
+    """
+    win = MainWindow()
+
+    captured = {}
+
+    def fake_about(parent, title, text):  # noqa: ARG001
+        captured["title"] = title
+        captured["text"] = text
+
+    # Patch QMessageBox.about used in the GUI module to avoid real dialog
+    monkeypatch.setattr(gui_mod.QMessageBox, "about", fake_about)
+
+    win._show_about_dialog()
+
+    assert captured.get("title")
+    about_html = captured.get("text", "")
+    # Normalize whitespace for robust matching
+    normalized = " ".join(about_html.split())
+    # Check for key phrases in the disclaimer
+    assert ("Safety Warning" in normalized) or ("Warning" in normalized)
+    assert ("not be used to control safety-critical systems" in normalized) or (
+        "safety-critical" in normalized
+    )

@@ -134,7 +134,7 @@ def test_worker_handles_bus_creation_error():
         error_event.set()
 
     worker = CANWorker(input_config, output_config, {})
-    worker.error_occurred.connect(on_error, type=Qt.ConnectionType.DirectConnection)
+    worker.error_occurred.connect(on_error)
 
     worker.run()
 
@@ -221,3 +221,93 @@ def test_continuous_monitoring_receives_multiple_frames(virtual_can_buses):
     worker_thread.join(timeout=1.0)
 
     assert len(received) >= total, f"Expected >= {total} retransmissions, got {len(received)}"
+
+
+def test_bitrate_mismatch_error_emits_signal(monkeypatch):
+    """
+    REQ-FUNC-LOG-008: Handle bitrate mismatch detected by backend by reporting an error.
+    Simulate bus creation raising a CanError('Bitrate mismatch').
+    """
+    # Patch Bus to raise on creation
+    def raise_on_create(**kwargs):  # noqa: ARG001
+        raise can.CanError("Bitrate mismatch")
+
+    monkeypatch.setattr(can.interface, "Bus", raise_on_create)
+
+    input_config = {"interface": "virtual", "channel": "vcan0", "bitrate": 500000}
+    output_config = {"interface": "virtual", "channel": "vcan1", "bitrate": 500000}
+
+    worker = CANWorker(input_config, output_config, {})
+
+    error_message = None
+    error_event = threading.Event()
+
+    def on_error(msg):
+        nonlocal error_message
+        error_message = msg
+        error_event.set()
+
+    worker.error_occurred.connect(on_error)
+
+    # Run synchronously
+    worker.run()
+
+    assert error_event.wait(timeout=1.0)
+    assert error_message is not None
+    assert "Error in CAN worker" in error_message
+    assert "Bitrate mismatch" in error_message
+
+
+def test_bus_off_condition_reported(monkeypatch):
+    """
+    REQ-FUNC-LOG-009: Detect and report CAN bus-off condition on input channel.
+    Simulate recv() raising a CanError('bus off').
+    """
+
+    class FakeInputBus:
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
+            raise can.CanError("bus off")
+
+        def shutdown(self):
+            return None
+
+    class FakeOutputBus:
+        def send(self, msg):  # noqa: ARG002
+            return None
+
+        def shutdown(self):
+            return None
+
+    # First Bus() call returns input, second returns output
+    calls = []
+
+    def bus_side_effect(**kwargs):  # noqa: ARG001
+        if not calls:
+            calls.append("in")
+            return FakeInputBus()
+        return FakeOutputBus()
+
+    monkeypatch.setattr(can.interface, "Bus", bus_side_effect)
+
+    input_config = {"interface": "virtual", "channel": "vcan0"}
+    output_config = {"interface": "virtual", "channel": "vcan1"}
+
+    worker = CANWorker(input_config, output_config, {})
+
+    error_message = None
+    error_event = threading.Event()
+
+    def on_error(msg):
+        nonlocal error_message
+        error_message = msg
+        error_event.set()
+
+    worker.error_occurred.connect(on_error, type=Qt.ConnectionType.DirectConnection)
+
+    # Run synchronously (will error on first recv)
+    worker.run()
+
+    assert error_event.wait(timeout=1.0)
+    assert error_message is not None
+    assert "Error in CAN worker" in error_message
+    assert "bus off" in error_message.lower()
