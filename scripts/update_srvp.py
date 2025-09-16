@@ -135,42 +135,78 @@ def get_requirement_statuses(test_outcomes, req_to_tests):
     return req_statuses
 
 
-def update_srvp_document(req_statuses):
-    """Update the SRVP document with the new requirement statuses."""
-    print(f"Updating SRVP document: {SRVP_PATH}")
-    content = SRVP_PATH.read_text(encoding="utf-8")
+def build_markdown_report(
+    req_statuses: dict[str, str],
+    req_to_tests: dict[str, list[str]],
+    test_outcomes: dict[str, str],
+) -> str:
+    """Create a standalone Markdown report summarizing test results vs requirements."""
+    total_tests = len(test_outcomes)
+    passed = sum(1 for o in test_outcomes.values() if o == "passed")
+    failed = sum(1 for o in test_outcomes.values() if o == "failed")
+    skipped = sum(1 for o in test_outcomes.values() if o == "skipped")
 
-    lines = content.splitlines()
-    new_lines = []
-    updates_made = 0
+    total_reqs = len(req_to_tests)
+    verified = sum(1 for s in req_statuses.values() if s.endswith("Verified"))
+    req_failed = sum(1 for s in req_statuses.values() if s.endswith("Failed"))
 
-    # IMPROVED REGEX: More flexible status matching for all checkbox formats
-    req_line_pattern = re.compile(
-        r"\|\s*(REQ-FUNC-\w+-\d{3})\s*\|\s*Test\s*\|.*?\|\s*"
-        r"(\\?\[[\sx]\] (?:Not Started|Verified|Failed)|Verified|Failed|"
-        r"\\?\[ \\?\] Not Started)\s*\|"
+    lines: list[str] = []
+    lines.append("# Test Report - SRVP Functional Requirements")
+    lines.append("")
+    lines.append(
+        "This document summarizes the latest test run and the verification status "
+        "of the SRVP functional requirements."
     )
+    lines.append("")
+    lines.append("## Summary")
+    lines.append("")
+    lines.append(
+        f"- Tests: {passed} passed, {failed} failed, {skipped} skipped (total {total_tests})"
+    )
+    pending = total_reqs - verified - req_failed
+    lines.append(
+        f"- Requirements: {verified} verified, {req_failed} failed, {pending} pending "
+        f"(total {total_reqs})"
+    )
+    lines.append("")
 
-    for line in lines:
-        match = req_line_pattern.search(line)
-        if match:
-            req_id = match.group(1)
-            old_status = match.group(2)
+    # Requirements table
+    lines.append("## Requirements Status")
+    lines.append("")
+    lines.append("| Requirement | Status | Tests |")
+    lines.append("| --- | --- | --- |")
+    for req_id in sorted(req_to_tests.keys()):
+        status = req_statuses.get(req_id, "[ ] Not Started")
+        tests = ", ".join(req_to_tests.get(req_id, []))
+        lines.append(f"| {req_id} | {status} | {tests} |")
+    lines.append("")
 
-            if req_id in req_statuses:
-                new_status = req_statuses[req_id]
-                updated_line = line.replace(old_status, new_status)
-                new_lines.append(updated_line)
-                print(f"  - Updated {req_id}: {old_status} -> {new_status}")
-                updates_made += 1
-            else:
-                new_lines.append(line)
-        else:
-            new_lines.append(line)
+    # Detailed section
+    lines.append("## Details")
+    lines.append("")
+    for req_id in sorted(req_to_tests.keys()):
+        lines.append(f"### {req_id}")
+        lines.append("")
+        lines.append(f"- Status: {req_statuses.get(req_id, '[ ] Not Started')}")
+        lines.append("- Tests:")
+        for nodeid in req_to_tests.get(req_id, []):
+            outcome = test_outcomes.get(nodeid, "skipped")
+            badge = "✅" if outcome == "passed" else ("❌" if outcome == "failed" else "➖")
+            lines.append(f"  - {badge} `{nodeid}` — {outcome}")
+        lines.append("")
 
-    OUTPUT_PATH.write_text("\n".join(new_lines), encoding="utf-8")
-    print(f"SRVP document updated and saved to {OUTPUT_PATH}")
-    print(f"Total updates made: {updates_made}")
+    return "\n".join(lines)
+
+
+def write_markdown_report(
+    req_statuses: dict[str, str],
+    req_to_tests: dict[str, list[str]],
+    test_outcomes: dict[str, str],
+) -> None:
+    """Write the standalone Markdown report to OUTPUT_PATH."""
+    report = build_markdown_report(req_statuses, req_to_tests, test_outcomes)
+    OUTPUT_PATH.write_text(report, encoding="utf-8")
+    print(f"Test report written to {OUTPUT_PATH}")
 
 
 def main():
@@ -215,8 +251,8 @@ def main():
         for req_id, status in req_statuses.items():
             print(f"  {req_id}: {status}")
 
-        # Step 5: Update SRVP document
-        update_srvp_document(req_statuses)
+        # Step 5: Generate standalone Markdown test report
+        write_markdown_report(req_statuses, req_to_tests, test_outcomes)
         print("\nProcess completed successfully!")
         return 0
 
