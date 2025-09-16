@@ -17,6 +17,7 @@ SRVP_PATH = ROOT_DIR / "resources" / "docs" / "srvp.md"
 OUTPUT_PATH = ROOT_DIR / "resources" / "docs" / "srvp_TR.md"
 REPORT_PATH = ROOT_DIR / "resources" / "docs" / "report.json"
 TESTS_DIR = ROOT_DIR / "tests"
+SRS_PATH = ROOT_DIR / "resources" / "docs" / "srs.md"
 
 
 def check_pytest_available():
@@ -79,6 +80,24 @@ def parse_test_report():
 
     print(f"Found {len(test_outcomes)} test results")
     return test_outcomes
+
+
+def extract_requirement_ids_from_docs() -> set[str]:
+    """Extract all requirement IDs appearing in SRVP/SRS documents.
+
+    Matches patterns like REQ-FUNC-LOG-010, REQ-NFR-REL-001, etc.
+    """
+    ids: set[str] = set()
+    pattern = re.compile(r"REQ-(?:[A-Z]+-)+\d{3}")
+    for path in (SRVP_PATH, SRS_PATH):
+        try:
+            if path.exists():
+                text = path.read_text(encoding="utf-8")
+                ids.update(pattern.findall(text))
+        except Exception:
+            # Ignore read errors; best-effort extraction
+            pass
+    return ids
 
 
 def extract_req_ids_from_docstrings():
@@ -146,9 +165,18 @@ def build_markdown_report(
     failed = sum(1 for o in test_outcomes.values() if o == "failed")
     skipped = sum(1 for o in test_outcomes.values() if o == "skipped")
 
-    total_reqs = len(req_to_tests)
-    verified = sum(1 for s in req_statuses.values() if s.endswith("Verified"))
-    req_failed = sum(1 for s in req_statuses.values() if s.endswith("Failed"))
+    # Aggregate requirement IDs from docs and tests
+    ids_from_docs = extract_requirement_ids_from_docs()
+    all_req_ids_sorted = sorted(set(req_to_tests.keys()) | ids_from_docs)
+
+    # Compute counts across all requirements (default Not Started)
+    def status_of(req_id: str) -> str:
+        return req_statuses.get(req_id, "[ ] Not Started")
+
+    total_reqs = len(all_req_ids_sorted)
+    verified = sum(1 for rid in all_req_ids_sorted if status_of(rid).endswith("Verified"))
+    req_failed = sum(1 for rid in all_req_ids_sorted if status_of(rid).endswith("Failed"))
+    pending = total_reqs - verified - req_failed
 
     lines: list[str] = []
     lines.append("# Test Report - SRVP Functional Requirements")
@@ -163,7 +191,6 @@ def build_markdown_report(
     lines.append(
         f"- Tests: {passed} passed, {failed} failed, {skipped} skipped (total {total_tests})"
     )
-    pending = total_reqs - verified - req_failed
     lines.append(
         f"- Requirements: {verified} verified, {req_failed} failed, {pending} pending "
         f"(total {total_reqs})"
@@ -175,7 +202,11 @@ def build_markdown_report(
     lines.append("")
     lines.append("| Requirement | Status | Tests |")
     lines.append("| --- | --- | --- |")
-    for req_id in sorted(req_to_tests.keys()):
+    # Determine the full set of requirement IDs from SRVP document + tests mapping
+    # Use precomputed comprehensive list
+    all_req_ids = all_req_ids_sorted
+
+    for req_id in all_req_ids:
         status = req_statuses.get(req_id, "[ ] Not Started")
         tests = ", ".join(req_to_tests.get(req_id, []))
         lines.append(f"| {req_id} | {status} | {tests} |")
@@ -184,7 +215,7 @@ def build_markdown_report(
     # Detailed section
     lines.append("## Details")
     lines.append("")
-    for req_id in sorted(req_to_tests.keys()):
+    for req_id in all_req_ids:
         lines.append(f"### {req_id}")
         lines.append("")
         lines.append(f"- Status: {req_statuses.get(req_id, '[ ] Not Started')}")
@@ -193,6 +224,8 @@ def build_markdown_report(
             outcome = test_outcomes.get(nodeid, "skipped")
             badge = "✅" if outcome == "passed" else ("❌" if outcome == "failed" else "➖")
             lines.append(f"  - {badge} `{nodeid}` — {outcome}")
+        if not req_to_tests.get(req_id):
+            lines.append("  - ➖ No tests mapped yet")
         lines.append("")
 
     return "\n".join(lines)
