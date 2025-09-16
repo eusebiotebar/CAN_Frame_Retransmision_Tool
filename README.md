@@ -25,10 +25,13 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 
 - **🖥️ Cross-platform GUI**: PyQt6-based interface for CAN frame analysis
 - **⚡ Real-time CAN Communication**: Load, parse, and retransmit CAN frames  
-- **� Dual Frame Visualization**: Separate real-time tables for received (RX) and transmitted (TX) frames
-- **�🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
+- **🖥️ Dual Frame Visualization**: Separate real-time tables for received (RX) and transmitted (TX) frames
+
+ See the test report in [`srvp_TR.md`](resources/docs/srvp_TR.md) for the latest SRVP verification status.
+
+- **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
 - **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
-- **� Session Management**: Export and manage CAN communication sessions
+- **📁 Session Management**: Export and manage CAN communication sessions
 - **📝 Frame Logging**: CSV logging of CAN frames with timestamps and metadata
 - **🚀 Standalone Executable**: No Python installation required for Windows users
 - **🐧 Cross-platform**: Windows, Linux, and virtual CAN interface support

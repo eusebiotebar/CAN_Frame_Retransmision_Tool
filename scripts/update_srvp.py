@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).parent.parent
 SRVP_PATH = ROOT_DIR / "resources" / "docs" / "srvp.md"
-OUTPUT_PATH = ROOT_DIR / "resources" / "docs" / "srvp_test.md"
+OUTPUT_PATH = ROOT_DIR / "resources" / "docs" / "srvp_TR.md"
 REPORT_PATH = ROOT_DIR / "resources" / "docs" / "report.json"
 TESTS_DIR = ROOT_DIR / "tests"
 

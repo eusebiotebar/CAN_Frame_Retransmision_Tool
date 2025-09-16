@@ -137,7 +137,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
             generate_release_notes: false
-            files: dist/*
+            files: |
+              dist/*
+              resources/docs/srvp_TR.md
             body: |
               Release v${{ steps.version.outputs.version }}
               Please check the [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/resources/docs/CHANGELOG.md) for full details about this release.
