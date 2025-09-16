@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 25 passed, 0 failed, 0 skipped (total 25)
-- Requirements: 16 verified, 0 failed, 22 pending (total 38)
+- Tests: 27 passed, 0 failed, 0 skipped (total 27)
+- Requirements: 18 verified, 0 failed, 20 pending (total 38)
 
 ## Requirements Status
 
@@ -30,7 +30,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-INT-009 | [x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
 | REQ-FUNC-INT-010 | [x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
 | REQ-FUNC-LOG-001 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
-| REQ-FUNC-LOG-002 | [ ] Not Started |  |
+| REQ-FUNC-LOG-002 | [x] Verified | tests/test_can_logic.py::test_continuous_monitoring_receives_multiple_frames |
 | REQ-FUNC-LOG-003 | [x] Verified | tests/test_can_logic.py::test_signals_are_emitted_for_frames |
 | REQ-FUNC-LOG-004 | [x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
 | REQ-FUNC-LOG-005 | [x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
@@ -38,7 +38,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-LOG-007 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
 | REQ-FUNC-LOG-008 | [ ] Not Started |  |
 | REQ-FUNC-LOG-009 | [ ] Not Started |  |
-| REQ-FUNC-LOG-010 | [ ] Not Started |  |
+| REQ-FUNC-LOG-010 | [x] Verified | tests/test_logging.py::test_frame_logger_writes_csv |
 | REQ-FUNC-LOG-011 | [ ] Not Started |  |
 | REQ-NFR-MNT-001 | [ ] Not Started |  |
 | REQ-NFR-MNT-002 | [ ] Not Started |  |
@@ -128,9 +128,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-LOG-002
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_can_logic.py::test_continuous_monitoring_receives_multiple_frames` — passed
 
 ### REQ-FUNC-LOG-003
 
@@ -178,9 +178,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-LOG-010
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_logging.py::test_frame_logger_writes_csv` — passed
 
 ### REQ-FUNC-LOG-011
 

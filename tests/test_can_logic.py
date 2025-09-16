@@ -187,3 +187,37 @@ def test_signals_are_emitted_for_frames(virtual_can_buses):
     assert received_frames[0].arbitration_id == 0x123
     assert len(retransmitted_frames) == 1
     assert retransmitted_frames[0].arbitration_id == 0x123
+
+
+def test_continuous_monitoring_receives_multiple_frames(virtual_can_buses):
+    """
+    REQ-FUNC-LOG-002: While in Listening/Receiving state, continuously monitor input channel.
+    Send multiple frames and verify that multiple retransmissions occur.
+    """
+    input_bus, output_bus_listener = virtual_can_buses
+
+    input_config = {"interface": "virtual", "channel": "vcan0"}
+    output_config = {"interface": "virtual", "channel": "vcan1"}
+
+    worker = CANWorker(input_config, output_config, {})
+    worker_thread = threading.Thread(target=worker.run, daemon=True)
+    worker_thread.start()
+    time.sleep(0.1)
+
+    # Send a burst of frames
+    total = 5
+    for i in range(total):
+        input_bus.send(can.Message(arbitration_id=0x100 + i, data=[i]))
+
+    # Collect outputs
+    received = []
+    t_end = time.time() + 2.0
+    while time.time() < t_end and len(received) < total:
+        msg = output_bus_listener.recv(timeout=0.1)
+        if msg is not None:
+            received.append(msg)
+
+    worker.stop()
+    worker_thread.join(timeout=1.0)
+
+    assert len(received) >= total, f"Expected >= {total} retransmissions, got {len(received)}"
