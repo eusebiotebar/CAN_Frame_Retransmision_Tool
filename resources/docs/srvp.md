@@ -131,7 +131,7 @@ Verification activities will be integrated into the agile development sprints. A
   - Testing of input validation (REQ-FUNC-INT-003, REQ-FUNC-INT-007).
 - **Sprint 3:**
   - System testing for error handling scenarios (REQ-FUNC-LOG-007, REQ-FUNC-LOG-008, REQ-FUNC-LOG-009).
-  - Testing of logging features (REQ-FUNC-LOG-010, REQ-FUNC-LOG-011).
+  - Testing of logging features (REQ-FUNC-LOG-010).
   - Usability testing for GUI responsiveness and clarity (REQ-NFR-USA-001, REQ-NFR-USA-002, REQ-NFR-USA-003, REQ-NFR-USA-004).
 - **Sprint 4:**
   - Stress testing for reliability and memory usage (REQ-NFR-REL-001, REQ-NFR-REL-002).

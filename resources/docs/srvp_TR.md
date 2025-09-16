@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 27 passed, 0 failed, 0 skipped (total 27)
-- Requirements: 18 verified, 0 failed, 20 pending (total 38)
+- Tests: 31 passed, 0 failed, 0 skipped (total 31)
+- Requirements: 23 verified, 0 failed, 14 pending (total 37)
 
 ## Requirements Status
 
@@ -36,10 +36,9 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-LOG-005 | [x] Verified | tests/test_can_logic.py::test_can_frame_is_rewritten_and_retransmitted, tests/test_can_logic.py::test_can_frame_is_passed_through_when_no_rule_matches |
 | REQ-FUNC-LOG-006 | [x] Verified | tests/test_can_logic.py::test_retransmission_stops_when_worker_is_stopped |
 | REQ-FUNC-LOG-007 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
-| REQ-FUNC-LOG-008 | [ ] Not Started |  |
-| REQ-FUNC-LOG-009 | [ ] Not Started |  |
+| REQ-FUNC-LOG-008 | [x] Verified | tests/test_can_logic.py::test_bitrate_mismatch_error_emits_signal |
+| REQ-FUNC-LOG-009 | [x] Verified | tests/test_can_logic.py::test_bus_off_condition_reported |
 | REQ-FUNC-LOG-010 | [x] Verified | tests/test_logging.py::test_frame_logger_writes_csv |
-| REQ-FUNC-LOG-011 | [ ] Not Started |  |
 | REQ-NFR-MNT-001 | [ ] Not Started |  |
 | REQ-NFR-MNT-002 | [ ] Not Started |  |
 | REQ-NFR-POR-001 | [ ] Not Started |  |
@@ -51,10 +50,10 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-NFR-REL-003 | [ ] Not Started |  |
 | REQ-NFR-REL-005 | [ ] Not Started |  |
 | REQ-NFR-REL-006 | [ ] Not Started |  |
-| REQ-NFR-SAF-001 | [ ] Not Started |  |
-| REQ-NFR-SAF-002 | [ ] Not Started |  |
+| REQ-NFR-SAF-001 | [x] Verified | tests/test_gui_logic.py::test_about_dialog_contains_disclaimer |
+| REQ-NFR-SAF-002 | [x] Verified | tests/test_gui_logic.py::test_about_dialog_contains_disclaimer |
 | REQ-NFR-USA-001 | [ ] Not Started |  |
-| REQ-NFR-USA-002 | [ ] Not Started |  |
+| REQ-NFR-USA-002 | [x] Verified | tests/test_gui_logic.py::test_ui_timestamps_include_milliseconds |
 | REQ-NFR-USA-003 | [ ] Not Started |  |
 | REQ-NFR-USA-004 | [ ] Not Started |  |
 
@@ -166,27 +165,21 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-LOG-008
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_can_logic.py::test_bitrate_mismatch_error_emits_signal` — passed
 
 ### REQ-FUNC-LOG-009
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_can_logic.py::test_bus_off_condition_reported` — passed
 
 ### REQ-FUNC-LOG-010
 
 - Status: [x] Verified
 - Tests:
   - ✅ `tests/test_logging.py::test_frame_logger_writes_csv` — passed
-
-### REQ-FUNC-LOG-011
-
-- Status: [ ] Not Started
-- Tests:
-  - ➖ No tests mapped yet
 
 ### REQ-NFR-MNT-001
 
@@ -256,15 +249,15 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-NFR-SAF-001
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_about_dialog_contains_disclaimer` — passed
 
 ### REQ-NFR-SAF-002
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_about_dialog_contains_disclaimer` — passed
 
 ### REQ-NFR-USA-001
 
@@ -274,9 +267,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-NFR-USA-002
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_ui_timestamps_include_milliseconds` — passed
 
 ### REQ-NFR-USA-003
 
