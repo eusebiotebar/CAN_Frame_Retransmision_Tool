@@ -17,11 +17,16 @@ OUTPUT_PATH = ROOT_DIR / "resources" / "docs" / "srvp_test.md"
 REPORT_PATH = ROOT_DIR / "resources" / "docs" / "report.json"
 TESTS_DIR = ROOT_DIR / "tests"
 
+
 def check_pytest_available():
     """Check if pytest is available."""
     try:
-        result = subprocess.run([sys.executable, "-m", "pytest", "--version"], 
-                              capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "--version"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         print(f"pytest available: {result.stdout.strip()}")
         return True
     except subprocess.CalledProcessError:
@@ -29,17 +34,20 @@ def check_pytest_available():
         print("Install with: pip install pytest pytest-json-report")
         return False
 
+
 def run_tests():
     """Run pytest and generate a JSON report."""
     print("Running tests...")
     try:
         result = subprocess.run(
             [
-                sys.executable, "-m", "pytest",  # Use sys.executable to ensure correct Python
+                sys.executable,
+                "-m",
+                "pytest",  # Use sys.executable to ensure correct Python
                 "--json-report",
                 f"--json-report-file={REPORT_PATH}",
                 str(TESTS_DIR),
-                "-v"  # Verbose output for debugging
+                "-v",  # Verbose output for debugging
             ],
             check=True,
             capture_output=True,
@@ -54,35 +62,37 @@ def run_tests():
         print("stderr:", e.stderr)
         return False
 
+
 def parse_test_report():
     """Parse the JSON test report to get test outcomes."""
     print("Parsing test report...")
     if not REPORT_PATH.exists():
         raise FileNotFoundError(f"Test report not found at {REPORT_PATH}")
 
-    with open(REPORT_PATH, encoding='utf-8') as f:
+    with open(REPORT_PATH, encoding="utf-8") as f:
         report = json.load(f)
 
     test_outcomes = {}
     for test in report.get("tests", []):
         test_outcomes[test["nodeid"]] = test["outcome"]
-    
+
     print(f"Found {len(test_outcomes)} test results")
     return test_outcomes
+
 
 def extract_req_ids_from_docstrings():
     """Extract requirement IDs from test function docstrings."""
     print("Extracting requirement IDs from test files...")
     req_to_tests = {}
-    
+
     for test_file in TESTS_DIR.glob("test_*.py"):
         print(f"  Processing {test_file.name}...")
-        content = test_file.read_text(encoding='utf-8')
-        
+        content = test_file.read_text(encoding="utf-8")
+
         # IMPROVED REGEX: More flexible whitespace handling
         # Allows for any amount of whitespace and newlines between function def and docstring
         pattern = r'def (test_\w+)\([^)]*\):[\s\S]*?"""([\s\S]*?)"""'
-        
+
         for match in re.finditer(pattern, content):
             test_name = match.group(1)
             docstring = match.group(2)
@@ -100,15 +110,16 @@ def extract_req_ids_from_docstrings():
     print(f"Found {len(req_to_tests)} requirements with associated tests")
     return req_to_tests
 
+
 def get_requirement_statuses(test_outcomes, req_to_tests):
     """Determine the status of each requirement based on test outcomes."""
     print("Determining requirement statuses...")
     req_statuses = {}
-    
+
     for req_id, test_names in req_to_tests.items():
         outcomes = [test_outcomes.get(name, "skipped") for name in test_names]
         print(f"  {req_id}: tests={test_names}, outcomes={outcomes}")
-        
+
         # A requirement is 'Failed' if any of its tests fail.
         if "failed" in outcomes:
             req_statuses[req_id] = "\\[x] Failed"
@@ -118,9 +129,10 @@ def get_requirement_statuses(test_outcomes, req_to_tests):
         # Otherwise, the status is not determined
         else:
             print(f"    No clear status for {req_id} (outcomes: {outcomes})")
-    
+
     print(f"Determined status for {len(req_statuses)} requirements")
     return req_statuses
+
 
 def update_srvp_document(req_statuses):
     """Update the SRVP document with the new requirement statuses."""
@@ -133,9 +145,9 @@ def update_srvp_document(req_statuses):
 
     # IMPROVED REGEX: More flexible status matching for all checkbox formats
     req_line_pattern = re.compile(
-        r'\|\s*(REQ-FUNC-\w+-\d{3})\s*\|\s*Test\s*\|.*?\|\s*'
-        r'(\\?\[[\sx]\] (?:Not Started|Verified|Failed)|Verified|Failed|'
-        r'\\?\[ \\?\] Not Started)\s*\|'
+        r"\|\s*(REQ-FUNC-\w+-\d{3})\s*\|\s*Test\s*\|.*?\|\s*"
+        r"(\\?\[[\sx]\] (?:Not Started|Verified|Failed)|Verified|Failed|"
+        r"\\?\[ \\?\] Not Started)\s*\|"
     )
 
     for line in lines:
@@ -159,28 +171,29 @@ def update_srvp_document(req_statuses):
     print(f"SRVP document updated and saved to {OUTPUT_PATH}")
     print(f"Total updates made: {updates_made}")
 
+
 def main():
     """Main function to run the entire process."""
     print("=== CAN Frame Retransmission Tool - SRVP Update Script ===")
-    
+
     # Check prerequisites
     if not check_pytest_available():
         return 1
-    
+
     if not SRVP_PATH.exists():
         print(f"ERROR: SRVP file not found: {SRVP_PATH}")
         return 1
-    
+
     if not TESTS_DIR.exists():
         print(f"ERROR: Tests directory not found: {TESTS_DIR}")
         return 1
-    
+
     try:
         # Step 1: Run tests
         if not run_tests():
             print("Failed to run tests")
             return 1
-        
+
         # Step 2: Parse test results
         test_outcomes = parse_test_report()
         print("\n--- DEBUG: TEST OUTCOMES ---")
@@ -207,12 +220,14 @@ def main():
         update_srvp_document(req_statuses)
         print("\nProcess completed successfully!")
         return 0
-        
+
     except Exception as e:
         print(f"\nAn error occurred: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
