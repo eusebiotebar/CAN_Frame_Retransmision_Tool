@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2025-09-17
+
+### Added (0.9.3)
+
+- Windows: Added a console-only helper executable for CI/automation: `can-id-reframe-cli.exe` (same `--version` / `--help-cli` interface).
+
+### Changed (0.9.3)
+
+- Main GUI executable configured as windowed (`console=False`) to avoid showing a console window on startup.
+- `can-id-reframe.spec`: now produces two executables: `can-id-reframe.exe` (GUI) and `can-id-reframe-cli.exe` (CLI).
+- `README.md`: added a short note documenting the purpose of `can-id-reframe-cli.exe` for CI/automation.
+
+### CI/CD (0.9.3)
+
+- `test-and-deploy.yml`: Windows job now tests the CLI binary (`can-id-reframe-cli.exe --help-cli`) and publishes both executables as artifacts (`windows-executables`).
+- `deploy-staging`: updated to download the `windows-executables` artifact.
+
+---
+
 ## [0.9.2] - 2025-09-17
 
 ### Fixed (0.9.2)
