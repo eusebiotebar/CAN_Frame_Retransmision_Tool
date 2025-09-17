@@ -1,9 +1,9 @@
 ---
 docType: Software Requirements Verification Plan Report (SRVPR)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 0.9.0
+docVersion: 0.9.1
 docAuthor: E. Tébar
-createdDate: 2025-09-16
+createdDate: 2025-09-17
 ---
 
 # Test Report - SRVP Functional Requirements
@@ -12,7 +12,7 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 33 passed, 0 failed, 0 skipped (total 33)
+- Tests: 42 passed, 0 failed, 0 skipped (total 42)
 - Requirements: 25 verified, 0 failed, 12 pending (total 37)
 
 ## Requirements Status
@@ -45,7 +45,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-NFR-POR-002 | [ ] Not Started |  |
 | REQ-NFR-POR-003 | [ ] Not Started |  |
 | REQ-NFR-POR-004 | [ ] Not Started |  |
-| REQ-NFR-REL-001 | [x] Verified | tests/test_can_logic.py::test_auto_recovery_after_bus_off |
+| REQ-NFR-REL-001 | [x] Verified | tests/test_can_logic.py::test_auto_recovery_after_bus_off, tests/test_can_logic.py::test_recovery_exhaustion_emits_error |
 | REQ-NFR-REL-002 | [ ] Not Started |  |
 | REQ-NFR-REL-003 | [ ] Not Started |  |
 | REQ-NFR-REL-005 | [ ] Not Started |  |
@@ -222,6 +222,7 @@ This document summarizes the latest test run and the verification status of the 
 - Status: [x] Verified
 - Tests:
   - ✅ `tests/test_can_logic.py::test_auto_recovery_after_bus_off` — passed
+  - ✅ `tests/test_can_logic.py::test_recovery_exhaustion_emits_error` — passed
 
 ### REQ-NFR-REL-002
 
