@@ -73,6 +73,8 @@ can-id-reframe --version
 can-id-reframe --help-cli
 ```
 
+Note (Windows, CI/automation): builds may also include a console-enabled helper executable `can-id-reframe-cli.exe` intended for CI smoke tests and scripted usage. It exposes the same `--version` and `--help-cli` options but runs as a console app, while `can-id-reframe.exe` runs as a windowed GUI application.
+
 ## Supported CAN Hardware
 
 The application automatically detects and supports various CAN interfaces:
