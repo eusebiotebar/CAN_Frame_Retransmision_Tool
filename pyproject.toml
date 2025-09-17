@@ -15,6 +15,8 @@ requires-python = ">=3.10"
 dependencies = [
   "PyQt6>=6.7.0",
   "python-can>=4.3.1",
+  # Optional but recommended on Windows to provide epoch-based timestamps for some drivers
+  "uptime; platform_system == 'Windows'",
 ]
 
 [project.optional-dependencies]

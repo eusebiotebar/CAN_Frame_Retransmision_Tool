@@ -1,9 +1,10 @@
 ---
 docType: Software Requirements Verification Plan (SRVP)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 2.0.0
+docVersion: 1.2.0
 docAuthor: E. Tébar
 createdDate: 2025-09-04
+lastModifiedDate: 2025-09-17
 ---
 
 # CAN Frame Retransmission Tool (SRVP)
@@ -17,10 +18,12 @@ This document defines the plan, methods, and criteria for verifying the requirem
 ## Referenced Documents
 
 [DOC-001]: (SRS.md)
+[DOC-002]: (SRVP_TR.md)
 
 |Ref. No. |Doc. Number |Version    |Title                                                |
 |:--------|:-----------|:----------|:----------------------------------------------------|
-| /1/     | ATID-100201 | Latest    | [(SRS) for CAN Frame Retransmission Tool][DOC-001]                           |
+| /1/     | ATID-10201 | Latest    | [(SRS) for CAN Frame Retransmission Tool][DOC-001]                           |
+| /2/     | ATID-10301_TR | Latest    | [(SRVP_TR) Test Report for SRVP][DOC-002]                           |
 
 ## Definitions
 
@@ -84,7 +87,8 @@ Verification will be conducted at the following levels:
 | REQ-FUNC-LOG-007 | Test | If device detection fails, a clear error message is displayed, and the channel selection dropdowns remain empty or indicate "No Devices Found." If channel opening fails (e.g., busy, permissions), an error message is displayed, the status indicator shows "Error," and the retransmission process does not start. | \[ ] Not Started |
 | REQ-FUNC-LOG-008 | Test | If `python-can` reports a bitrate error during channel opening or operation, an error message is displayed, the status indicator shows "Error," and the retransmission stops. | \[ ] Not Started |
 | REQ-FUNC-LOG-009 | Test | If a bus-off event occurs on an active channel, a warning/error message is displayed, and the status indicator changes to "Error" or "Bus-Off". Retransmission is paused or stopped. | \[ ] Not Started |
-| REQ-FUNC-LOG-010 | Test / Inspection | Events such as application start, channel open/close, frame retransmission start/stop, and errors are printed to the console. The logging level is configurable (e.g., DEBUG, INFO, WARNING, ERROR). | \[ ] Not Started |
+| REQ-FUNC-LOG-010 | Test / Inspection | Verify that LogManager creates a new log file each session with a timestamped filename. | \[ ] Not Started |
+| REQ-FUNC-LOG-011 | Test | Each log entry includes a timestamp with millisecond precision, direction (Input/Output), CAN ID, DLC, and Data in a human-readable format. | \[ ] Not Started |
 
 ### Non-functional Requirements Verification
 
@@ -131,7 +135,7 @@ Verification activities will be integrated into the agile development sprints. A
   - Testing of input validation (REQ-FUNC-INT-003, REQ-FUNC-INT-007).
 - **Sprint 3:**
   - System testing for error handling scenarios (REQ-FUNC-LOG-007, REQ-FUNC-LOG-008, REQ-FUNC-LOG-009).
-  - Testing of logging features (REQ-FUNC-LOG-010).
+  - Testing of logging features (REQ-FUNC-LOG-010, REQ-FUNC-LOG-011).
   - Usability testing for GUI responsiveness and clarity (REQ-NFR-USA-001, REQ-NFR-USA-002, REQ-NFR-USA-003, REQ-NFR-USA-004).
 - **Sprint 4:**
   - Stress testing for reliability and memory usage (REQ-NFR-REL-001, REQ-NFR-REL-002).

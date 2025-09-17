@@ -1,9 +1,10 @@
 ---
 docType: Software Requirements Specification (SRS)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 1.0.0
+docVersion: 1.2.0
 docAuthor: E. Tébar
 createdDate: 2025-09-04
+lastModifiedDate: 2025-09-17
 ---
 
 # CAN Frame Retransmission Tool (SRS)
@@ -54,11 +55,11 @@ Updates to this SRS document will be carried out through a formal change control
 
 ## Referenced Documents
 
-[DOC-001]: (SRVP.md)
+[DOC-001]: (SRS.md)
 
-|Ref. No. |Doc. Number     |Version    |Title                                                                       |
-|:--------|:-----------    |:----------|:---------------------------------------------------------------------------|
-| /1/     | XXXXXXX        | Latest    | [(SRVP) for CAN Frame Retransmission Too][DOC-001]                                     |
+|Ref. No. |Doc. Number |Version    |Title                                                |
+|:--------|:-----------|:----------|:----------------------------------------------------|
+| /1/     | ATID-10201 | Latest    | [(SRS) for CAN Frame Retransmission Tool][DOC-001]  |
 
 ## Definitions
 
@@ -196,7 +197,8 @@ flowchart TD
 | REQ-FUNC-LOG-007     | The system SHALL handle errors during CAN device detection or channel opening (e.g., no Kvaser devices found, device in use, access denied).                                    | High     |
 | REQ-FUNC-LOG-008     | The system SHALL handle bitrate mismatches between the configured bitrate and the actual bus bitrate if detected by the `python-can` backend.                                   | Medium   |
 | REQ-FUNC-LOG-009     | The system SHALL detect and report a CAN bus-off condition on either the input or output channel.                                                                               | High     |
-| REQ-FUNC-LOG-010     | The system SHALL provide configurable console logging for operational events (e.g., start/stop, channel status, errors).                                                        | Medium   |
+| REQ-FUNC-LOG-010     | The system SHALL provide configurable console/file logging for operational events.                                                         | Medium   |
+| REQ-FUNC-LOG-011     | The system SHALL log CAN frame activity with timestamps, including received frames and retransmitted frames.                                                                 | High     |
 
 ## Non-functional Requirements
 

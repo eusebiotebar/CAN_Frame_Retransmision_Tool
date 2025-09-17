@@ -36,6 +36,8 @@ if ($Executable) {
     
     # Install PyInstaller if not present
     py -m pip install --upgrade pyinstaller
+    # Ensure project and its dependencies are installed (so hidden/optional deps are present)
+    py -m pip install -e .
     
     # Build executable using spec file
     py -m PyInstaller can-id-reframe.spec --clean --noconfirm

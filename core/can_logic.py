@@ -5,6 +5,8 @@ CAN device detection, message retransmission, and threading.
 """
 
 import contextlib
+import ctypes
+import logging
 import platform
 import time
 from functools import partial
@@ -246,62 +248,86 @@ class CANManager(QObject):
         """Detect CAN devices on Windows."""
         windows_channels: list[dict[str, str]] = []
         try:
-            # Try to detect PCAN devices
+            # Suppress noisy backend warnings during detection only
+            noisy_loggers = [
+                "can.pcan",  # warns when 'uptime' not installed
+                "can.interfaces.vector.canlib",  # warns when vxlapi64 not found
+            ]
+            prev_levels: dict[str, int] = {}
+            for name in noisy_loggers:
+                logger = logging.getLogger(name)
+                prev_levels[name] = logger.level
+                logger.setLevel(logging.ERROR)
+
             try:
-                from can.interfaces.pcan import PcanBus
+                # Try to detect PCAN devices
+                try:
+                    from can.interfaces.pcan import PcanBus
 
-                # Common PCAN channels
-                pcan_channels = [
-                    "PCAN_USBBUS1",
-                    "PCAN_USBBUS2",
-                    "PCAN_USBBUS3",
-                    "PCAN_USBBUS4",
-                    "PCAN_USBBUS5",
-                    "PCAN_USBBUS6",
-                    "PCAN_USBBUS7",
-                    "PCAN_USBBUS8",
-                ]
+                    # Common PCAN channels
+                    pcan_channels = [
+                        "PCAN_USBBUS1",
+                        "PCAN_USBBUS2",
+                        "PCAN_USBBUS3",
+                        "PCAN_USBBUS4",
+                        "PCAN_USBBUS5",
+                        "PCAN_USBBUS6",
+                        "PCAN_USBBUS7",
+                        "PCAN_USBBUS8",
+                    ]
 
-                for channel in pcan_channels:
+                    for channel in pcan_channels:
+                        try:
+                            test_bus = PcanBus(channel=channel, bitrate=500000)
+                            test_bus.shutdown()
+
+                            windows_channels.append(
+                                {
+                                    "interface": "pcan",
+                                    "channel": channel,
+                                    "display_name": f"PCAN {channel}",
+                                }
+                            )
+                        except Exception:
+                            continue
+
+                except (ImportError, Exception):
+                    pass
+
+                # Try to detect Vector devices only if the XL API DLL is present
+                has_vxl = False
+                try:
+                    ctypes.WinDLL("vxlapi64")
+                    has_vxl = True
+                except OSError:
+                    has_vxl = False
+
+                if has_vxl:
                     try:
-                        test_bus = PcanBus(channel=channel, bitrate=500000)
-                        test_bus.shutdown()
+                        from can.interfaces.vector import VectorBus
 
-                        windows_channels.append(
-                            {
-                                "interface": "pcan",
-                                "channel": channel,
-                                "display_name": f"PCAN {channel}",
-                            }
-                        )
-                    except Exception:
-                        continue
+                        # Vector channels are typically numbered
+                        for channel_num in range(4):
+                            try:
+                                vector_bus = VectorBus(channel=channel_num, bitrate=500000)
+                                vector_bus.shutdown()
 
-            except (ImportError, Exception):
-                pass
-
-            # Try to detect Vector devices
-            try:
-                from can.interfaces.vector import VectorBus
-
-                # Vector channels are typically numbered
-                for channel_num in range(4):
-                    try:
-                        vector_bus = VectorBus(channel=channel_num, bitrate=500000)
-                        vector_bus.shutdown()
-
-                        windows_channels.append(
-                            {
-                                "interface": "vector",
-                                "channel": str(channel_num),
-                                "display_name": f"Vector Channel {channel_num}",
-                            }
-                        )
-                    except Exception:
-                        continue
-
-            except (ImportError, Exception):
-                pass
+                                windows_channels.append(
+                                    {
+                                        "interface": "vector",
+                                        "channel": str(channel_num),
+                                        "display_name": f"Vector Channel {channel_num}",
+                                    }
+                                )
+                            except Exception:
+                                continue
+                    except (ImportError, Exception):
+                        # python-can vector backend not installed/available
+                        pass
+            finally:
+                # Restore logger levels
+                for name, lvl in prev_levels.items():
+                    logging.getLogger(name).setLevel(lvl)
 
         except Exception:
             pass
