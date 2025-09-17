@@ -39,7 +39,7 @@ jobs:
           pip install pyinstaller
       - name: Build Windows executable
         run: |
-          pyinstaller --onefile --name can-id-reframe --add-data "core/version_info.txt;core" --add-data "core/gui.ui;core" can_id_reframe_cli.py
+          pyinstaller can-id-reframe.spec --clean --noconfirm
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
