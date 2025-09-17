@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2025-09-17
+
+### Fixed (0.9.2)
+
+- **CI/CD Pipeline Improvements**: Resolved critical issues with automated release process
+  - Fixed executable icon missing in CI-built releases by using `.spec` file instead of direct PyInstaller command line parameters
+  - Fixed `srvp_TR.md` test report not being committed back to repository after generation
+  - Ensured consistency between local and CI build processes for Windows executable generation
+  - CI-built executables now include application icon (`app_icon.ico`) matching local builds
+
+### Changed (0.9.2)
+
+- **Build Process Standardization**: Unified build approach across environments
+  - CI now uses `pyinstaller can-id-reframe.spec --clean --noconfirm` matching local `scripts/build.ps1`
+  - All PyInstaller configuration centralized in `.spec` file for better maintainability
+  - Automated commit of generated `srvp_TR.md` to repository after CI test execution
+
+### Technical Improvements (0.9.2)
+
+- **Release Workflow Enhancement**: Better automation and artifact management
+  - Added automatic commit step for SRVP Test Report in release workflow
+  - Improved git configuration and conditional push logic for generated documents
+  - Enhanced consistency between release assets and repository content
+
+### Notes (0.9.2)
+
+- This release focuses on CI/CD reliability and build consistency improvements
+- No functional changes to application behavior
+- Resolves issues where CI artifacts differed from local builds
+
+---
+
 ## [0.9.1] - 2025-09-16
 
 ### Added (0.9.1)
