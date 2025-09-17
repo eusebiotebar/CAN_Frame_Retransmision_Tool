@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 
+import pytest
+
+import core.utils as utils_mod
 from core.utils import (
     RuleParsingError,
     format_can_frame,
