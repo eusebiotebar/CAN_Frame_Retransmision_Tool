@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2025-09-16
+
+### Added (0.9.1)
+
+- **Enhanced Test Coverage**: Comprehensive low-risk tests for GUI and utility functions
+  - Added test coverage for `get_resource_path` in both development and frozen modes
+  - Added test coverage for `format_can_frame` utility function
+  - Added GUI tests for error handling, log path management, and recovery signals
+  - Added tests for rewrite rules error handling and status updates
+  - Overall test coverage increased to 76% with all quality gates passing
+
+### Changed (0.9.1)
+
+- **Recovery UI Enhancement (REQ-NFR-REL-001)**: Improved connection status feedback
+  - GUI now displays "Reconnecting" status during recovery attempts
+  - Enhanced recovery lifecycle with proper signal forwarding from CANManager
+  - Added recovery success and failure path testing for reliability validation
+
+### Fixed (0.9.1)
+
+- **CI Pipeline Stability**: Resolved critical testing and linting issues
+  - Fixed pytest hanging caused by modal QMessageBox.exec() blocking in headless environments
+  - Resolved ruff I001 import formatting errors in test files
+  - Applied proper monkeypatching to prevent GUI modal dialogs during automated testing
+  - Ensured all import statements comply with ruff formatting standards (parenthesized multi-line imports)
+
+### Technical Improvements (0.9.1)
+
+- **Test Infrastructure**: Enhanced test reliability and maintainability
+  - Implemented monkeypatching for GUI error dialogs to avoid CI blocking
+  - Improved import organization and formatting across test files
+  - Added comprehensive test validation for NFR-REL-001 auto-recovery requirements
+  - Verified English language compliance in GUI components (gui.ui already compliant)
+
+### Notes (0.9.1)
+
+- All quality gates now pass: 42/42 tests, ruff linting, and mypy type checking
+- This release focuses on test coverage improvements and CI reliability enhancements
+- No breaking changes to application functionality
+
+---
+
 ## [0.9.0] - 2025-09-16
 
 ### Added (0.9.0)
