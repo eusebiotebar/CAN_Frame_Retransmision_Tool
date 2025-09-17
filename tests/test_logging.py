@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import csv
+import re
 import tempfile
 from pathlib import Path
+
+import pytest
 
 from core.frame_logger import FrameLogger
 
@@ -17,6 +20,7 @@ class DummyMsg:
         self.timestamp = timestamp
 
 
+@pytest.mark.requirements(["REQ-FUNC-LOG-010", "REQ-FUNC-LOG-011"])
 def test_frame_logger_writes_csv():
     """
     REQ-FUNC-LOG-010: Provide configurable console/file logging for operational events.
@@ -39,10 +43,21 @@ def test_frame_logger_writes_csv():
         with log_path.open(newline="", encoding="utf-8") as f:
             rows = list(csv.reader(f))
 
-        assert rows[0] == ["Timestamp", "Direction", "ID", "DLC", "Data"]
-        # Two data rows
-        assert len(rows) == 3
-        # Basic format assertions (timestamp with 3 decimals, uppercase hex)
-        assert rows[1][1] == "RX" and rows[2][1] == "TX"
-        assert rows[1][2] == "123" and rows[2][2] == "456"
-        assert rows[1][4] == "0102" and rows[2][4] == "AA"
+    assert rows[0] == ["Timestamp", "Direction", "ID", "DLC", "Data"]
+    # Two data rows
+    assert len(rows) == 3
+    # Direction present
+    assert rows[1][1] == "RX" and rows[2][1] == "TX"
+    # ID in hex (uppercase) as per implementation
+    assert rows[1][2] == "123" and rows[2][2] == "456"
+    # DLC present and correct
+    assert rows[1][3] == "2" and rows[2][3] == "1"
+    # Data field in uppercase hex
+    assert rows[1][4] == "0102" and rows[2][4] == "AA"
+    # Timestamp has millisecond precision (3 decimals)
+    assert re.fullmatch(r"\d+\.\d{3}", rows[1][0])
+    assert re.fullmatch(r"\d+\.\d{3}", rows[2][0])
+    # And matches expected rounding of inputs
+    assert rows[1][0] == "1726480000.123"
+    # 1.999 has exactly 3 decimals, so formatting keeps it as 1.999
+    assert rows[2][0] == "1726480001.999"
