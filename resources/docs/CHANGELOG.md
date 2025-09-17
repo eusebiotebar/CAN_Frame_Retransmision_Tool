@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4] - 2025-09-17
+
+### Added (0.9.4)
+
+- Tests: Added verification test for `REQ-FUNC-LOG-011` ensuring CSV logging formats are correct
+  - Validates timestamp with millisecond precision and rounding
+  - Checks direction (`RX/TX`), ID in uppercase hex (no `0x`), DLC value, and data bytes in uppercase hex
+
+### CI/CD (0.9.4)
+
+- The release workflow will regenerate `resources/docs/srvp_TR.md` via `scripts/update_srvp.py`,
+  now including `REQ-FUNC-LOG-011` as Verified based on the new test.
+
+---
+
 ## [0.9.3] - 2025-09-17
 
 ### Added (0.9.3)
