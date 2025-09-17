@@ -1,11 +1,12 @@
 import sys
 from pathlib import Path
 
-import pytest
-
-import core.utils as utils_mod
-from core.utils import (RuleParsingError, format_can_frame, get_resource_path,
-                        parse_rewrite_rules)
+from core.utils import (
+    RuleParsingError,
+    format_can_frame,
+    get_resource_path,
+    parse_rewrite_rules,
+)
 
 
 def test_parse_valid_rules():
