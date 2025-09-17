@@ -1,7 +1,7 @@
 ---
 docType: Software Requirements Verification Plan Report (SRVPR)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 0.9.3
+docVersion: 0.9.4
 docAuthor: eusebiotebar
 createdDate: 2025-09-17
 ---
@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 42 passed, 0 failed, 0 skipped (total 42)
-- Requirements: 25 verified, 0 failed, 13 pending (total 38)
+- Tests: 43 passed, 0 failed, 0 skipped (total 43)
+- Requirements: 26 verified, 0 failed, 12 pending (total 38)
 
 ## Requirements Status
 
@@ -39,7 +39,7 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-LOG-008 | [x] Verified | tests/test_can_logic.py::test_bitrate_mismatch_error_emits_signal |
 | REQ-FUNC-LOG-009 | [x] Verified | tests/test_can_logic.py::test_bus_off_condition_reported |
 | REQ-FUNC-LOG-010 | [x] Verified | tests/test_logging.py::test_frame_logger_writes_csv |
-| REQ-FUNC-LOG-011 | [ ] Not Started |  |
+| REQ-FUNC-LOG-011 | [x] Verified | tests/test_logging.py::test_frame_logger_formats_fields_per_req_log_011 |
 | REQ-NFR-MNT-001 | [ ] Not Started |  |
 | REQ-NFR-MNT-002 | [ ] Not Started |  |
 | REQ-NFR-POR-001 | [ ] Not Started |  |
@@ -184,9 +184,9 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-LOG-011
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_logging.py::test_frame_logger_formats_fields_per_req_log_011` — passed
 
 ### REQ-NFR-MNT-001
 
