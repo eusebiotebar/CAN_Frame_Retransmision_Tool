@@ -215,6 +215,36 @@
              </property>
             </widget>
            </item>
+                   <item>
+                     <spacer name="mapping_buttons_spacer_2">
+                      <property name="orientation">
+                        <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                        <enum>QSizePolicy::Policy::Expanding</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                      </property>
+                     </spacer>
+                   </item>
+                   <item>
+                     <widget class="QPushButton" name="import_mapping_button">
+                      <property name="text">
+                        <string>Import...</string>
+                      </property>
+                     </widget>
+                   </item>
+                   <item>
+                     <widget class="QPushButton" name="export_mapping_button">
+                      <property name="text">
+                        <string>Export...</string>
+                      </property>
+                     </widget>
+                   </item>
           </layout>
          </item>
         </layout>

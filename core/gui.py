@@ -12,19 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
@@ -47,6 +37,8 @@ class MainWindow(QMainWindow):
     mapping_table: QTableWidget
     add_rule_button: QPushButton
     delete_rule_button: QPushButton
+    import_mapping_button: QPushButton
+    export_mapping_button: QPushButton
     log_level_combo: QComboBox
     log_file_path_edit: QLineEdit
     browse_log_file_button: QPushButton
@@ -98,7 +90,7 @@ class MainWindow(QMainWindow):
             m_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         # Default bitrate
-        idx = self.bitrate_combo.findText("250")
+        idx = self.bitrate_combo.findText("500")
         if idx >= 0:
             self.bitrate_combo.setCurrentIndex(idx)
 
@@ -137,6 +129,11 @@ class MainWindow(QMainWindow):
         self.start_stop_button.clicked.connect(self._on_start_stop_clicked)
         self.add_rule_button.clicked.connect(self._on_add_rule)
         self.delete_rule_button.clicked.connect(self._on_delete_rule)
+        # Import/Export ID mapping
+        if getattr(self, "import_mapping_button", None):
+            self.import_mapping_button.clicked.connect(self._on_import_mapping)
+        if getattr(self, "export_mapping_button", None):
+            self.export_mapping_button.clicked.connect(self._on_export_mapping)
         self.browse_log_file_button.clicked.connect(self._on_browse_log_file)
 
     # ------------------------------------------------------------------
@@ -188,6 +185,72 @@ class MainWindow(QMainWindow):
     def _on_delete_rule(self) -> None:
         if self.mapping_table.currentRow() >= 0:
             self.mapping_table.removeRow(self.mapping_table.currentRow())
+
+    def _on_import_mapping(self) -> None:
+        """Import ID mapping from a CSV-like file with two hex columns."""
+        fileName, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import ID Mapping",
+            "",
+            "CSV files (*.csv);;Text files (*.txt);;All files (*)",
+        )
+        if not fileName:
+            return
+        try:
+            rows: list[tuple[str, str]] = []
+            with open(fileName, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # Allow separators: comma or semicolon or whitespace
+                    sep = "," if "," in line else ";" if ";" in line else None
+                    parts = [p.strip() for p in (line.split(sep) if sep else line.split())]
+                    if len(parts) < 2:
+                        # Skip invalid/incomplete lines silently
+                        continue
+                    rows.append((parts[0], parts[1]))
+
+            # Validate by parsing with existing logic
+            _ = parse_rewrite_rules(rows)
+
+            # Populate mapping table
+            self.mapping_table.setRowCount(0)
+            for orig, rew in rows:
+                r = self.mapping_table.rowCount()
+                self.mapping_table.insertRow(r)
+                self.mapping_table.setItem(r, 0, QTableWidgetItem(orig.upper()))
+                self.mapping_table.setItem(r, 1, QTableWidgetItem(rew.upper()))
+        except Exception as e:
+            self._show_error_message("Import Error", f"Failed to import mapping: {e}")
+
+    def _on_export_mapping(self) -> None:
+        """Export current ID mapping to a CSV file with two hex columns."""
+        fileName, _ = QFileDialog.getSaveFileName(
+            self, "Export ID Mapping", "", "CSV files (*.csv);;All files (*)"
+        )
+        if not fileName:
+            return
+        try:
+            # Gather rows from table
+            rows: list[tuple[str, str]] = []
+            for row in range(self.mapping_table.rowCount()):
+                orig_item = self.mapping_table.item(row, 0)
+                rew_item = self.mapping_table.item(row, 1)
+                orig = (orig_item.text() if orig_item else "").strip()
+                rew = (rew_item.text() if rew_item else "").strip()
+                if not orig and not rew:
+                    continue
+                rows.append((orig, rew))
+
+            # Validate mapping before saving
+            _ = parse_rewrite_rules(rows)
+
+            with open(fileName, "w", encoding="utf-8", newline="") as f:
+                for orig, rew in rows:
+                    f.write(f"{orig.upper()},{rew.upper()}\n")
+        except Exception as e:
+            self._show_error_message("Export Error", f"Failed to export mapping: {e}")
 
     def _get_rewrite_rules(self):
         table_data = []

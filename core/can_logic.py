@@ -29,8 +29,21 @@ class CANWorker(QObject):
     recovery_failed = pyqtSignal()
     finished = pyqtSignal()
 
-    def __init__(self, input_config, output_config, rewrite_rules,
-                 *, retry_on_busoff: bool = True, max_retries: int = 3, retry_delay: float = 0.5):
+    def __init__(
+        self,
+        input_config,
+        output_config,
+        rewrite_rules,
+        *,
+        retry_on_busoff: bool = True,
+        max_retries: int = 3,
+        retry_delay: float = 0.5,
+        # TX overflow/throughput controls
+        max_send_retries: int = 10,
+        send_retry_initial_delay: float = 0.01,
+        tx_min_gap: float = 0.0,
+        tx_overflow_cooldown: float = 0.05,
+    ):
         super().__init__()
         # Buses are opened lazily in _open_buses
         self.input_bus: can.BusABC | None = None
@@ -45,7 +58,14 @@ class CANWorker(QObject):
         self._retry_delay = retry_delay
         self._last_open_error: Exception | None = None
         # Track consecutive bus-off recoveries to enforce max retries across iterations
-        self._busoff_streak: int = 0
+        self._busoff_streak = 0
+        # TX backpressure handling (mitigate transmit buffer overflow -13)
+        self._max_send_retries = max(1, int(max_send_retries))
+        self._send_retry_initial_delay = max(0.0, float(send_retry_initial_delay))  # seconds
+        # Adaptive throttling: ensure a minimum gap between sends and cooldown after overflow
+        self._tx_min_gap = max(0.0, float(tx_min_gap))  # seconds
+        self._tx_overflow_cooldown = max(0.0, float(tx_overflow_cooldown))  # seconds
+        self._last_tx_time = 0.0
 
     def run(self):
         """The main retransmission loop."""
@@ -86,10 +106,11 @@ class CANWorker(QObject):
                     # Propagate to outer handler
                     raise
                 if msg:
-                    self.frame_received.emit(msg)
                     new_id = self.rewrite_rules.get(msg.arbitration_id)
 
                     if new_id is not None:
+                        # Emit RX only for frames that will be transformed
+                        self.frame_received.emit(msg)
                         new_msg = can.Message(
                             arbitration_id=new_id,
                             data=msg.data,
@@ -98,10 +119,15 @@ class CANWorker(QObject):
                             timestamp=time.time(),
                         )
                         assert self.output_bus is not None
-                        self.output_bus.send(new_msg)
-                        self.frame_retransmitted.emit(new_msg)
+                        if self._send_with_retry(new_msg):
+                            self.frame_retransmitted.emit(new_msg)
+                        else:
+                            # Drop frame after exhausting retries; report but continue running
+                            self.error_occurred.emit(
+                                "TX buffer overflow: dropped a rewritten frame after retries"
+                            )
                     else:
-                        # Create a new message from the original to get a fresh timestamp
+                        # Passthrough: Create a new message from the original to get a fresh timestamp
                         retransmitted_msg = can.Message(
                             arbitration_id=msg.arbitration_id,
                             data=msg.data,
@@ -110,8 +136,11 @@ class CANWorker(QObject):
                             timestamp=time.time(),
                         )
                         assert self.output_bus is not None
-                        self.output_bus.send(retransmitted_msg)
-                        self.frame_retransmitted.emit(retransmitted_msg)
+                        # Retransmit silently (do not emit RX/TX to keep tables/logs limited to transformed IDs)
+                        if not self._send_with_retry(retransmitted_msg):
+                            self.error_occurred.emit(
+                                "TX buffer overflow: dropped a frame after retries"
+                            )
 
         except Exception as e:
             self.error_occurred.emit(f"Error in CAN worker: {e}")
@@ -161,6 +190,53 @@ class CANWorker(QObject):
             ):
                 return True
                 # Otherwise, keep trying
+        return False
+
+    def _send_with_retry(self, msg: can.Message) -> bool:
+        """Send a CAN message with timeout and retry/backoff when TX buffer is full.
+
+        Returns True if the message was sent, False if dropped after exhausting retries.
+        """
+        assert self.output_bus is not None
+        # Respect minimum gap between sends to avoid saturating slower backends
+        if self._tx_min_gap > 0.0 and self._last_tx_time > 0.0:
+            now = time.time()
+            elapsed = now - self._last_tx_time
+            remaining = self._tx_min_gap - elapsed
+            if remaining > 0:
+                time.sleep(remaining)
+
+        delay = max(0.0, self._send_retry_initial_delay)
+        attempts = max(1, self._max_send_retries)
+        for attempt in range(1, attempts + 1):
+            try:
+                # Use a small timeout to allow the backend to wait for TX space
+                self.output_bus.send(msg, timeout=0.1)
+                # Successful send: record time for inter-send gap
+                self._last_tx_time = time.time()
+                return True
+            except can.CanError as e:
+                text = str(e).lower()
+                # Common patterns across backends for TX queue saturation
+                is_overflow = (
+                    "overflow" in text
+                    or "tx buffer" in text
+                    or "transmit buffer" in text
+                    or "-13" in text
+                )
+                if is_overflow and attempt < attempts and self._is_running:
+                    time.sleep(delay)
+                    # Exponential backoff but clamp to a reasonable bound
+                    delay = min(delay * 2.0, 0.2)
+                    continue
+                # Non-overflow error or retries exhausted: fail this send
+                if is_overflow and self._tx_overflow_cooldown > 0.0:
+                    # Cool down briefly after overflow to avoid repeated drops
+                    time.sleep(self._tx_overflow_cooldown)
+                return False
+            except Exception:
+                # Any other unexpected error: do not crash the worker loop
+                return False
         return False
 
 
