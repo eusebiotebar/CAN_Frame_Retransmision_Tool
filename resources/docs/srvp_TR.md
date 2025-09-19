@@ -1,9 +1,9 @@
 ---
 docType: Software Requirements Verification Plan Report (SRVPR)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 0.9.4
+docVersion: 1.0.0
 docAuthor: eusebiotebar
-createdDate: 2025-09-17
+createdDate: 2025-09-19
 ---
 
 # Test Report - SRVP Functional Requirements
@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 43 passed, 0 failed, 0 skipped (total 43)
-- Requirements: 26 verified, 0 failed, 12 pending (total 38)
+- Tests: 55 passed, 0 failed, 0 skipped (total 55)
+- Requirements: 26 verified, 0 failed, 18 pending (total 44)
 
 ## Requirements Status
 
@@ -23,12 +23,18 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-INT-002 | [x] Verified | tests/test_gui_logic.py::test_two_distinct_selectors_for_channels |
 | REQ-FUNC-INT-003 | [x] Verified | tests/test_gui_logic.py::test_same_channel_selection_is_prevented |
 | REQ-FUNC-INT-004 | [x] Verified | tests/test_gui_logic.py::test_bitrate_applied_on_start |
-| REQ-FUNC-INT-005 | [x] Verified | tests/test_gui_logic.py::test_default_bitrate_is_250 |
+| REQ-FUNC-INT-005 | [x] Verified | tests/test_gui_logic.py::test_default_bitrate_is_500 |
 | REQ-FUNC-INT-006 | [x] Verified | tests/test_gui_logic.py::test_mapping_table_used_on_start |
 | REQ-FUNC-INT-007 | [x] Verified | tests/test_gui_logic.py::test_mapping_table_used_on_start |
 | REQ-FUNC-INT-008 | [x] Verified | tests/test_gui_logic.py::test_start_stop_button_toggles |
 | REQ-FUNC-INT-009 | [x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
 | REQ-FUNC-INT-010 | [x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
+| REQ-FUNC-INT-011 | [ ] Not Started |  |
+| REQ-FUNC-INT-012 | [ ] Not Started |  |
+| REQ-FUNC-INT-013 | [ ] Not Started |  |
+| REQ-FUNC-INT-014 | [ ] Not Started |  |
+| REQ-FUNC-INT-015 | [ ] Not Started |  |
+| REQ-FUNC-INT-016 | [ ] Not Started |  |
 | REQ-FUNC-LOG-001 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
 | REQ-FUNC-LOG-002 | [x] Verified | tests/test_can_logic.py::test_continuous_monitoring_receives_multiple_frames |
 | REQ-FUNC-LOG-003 | [x] Verified | tests/test_can_logic.py::test_signals_are_emitted_for_frames |
@@ -88,7 +94,7 @@ This document summarizes the latest test run and the verification status of the 
 
 - Status: [x] Verified
 - Tests:
-  - ✅ `tests/test_gui_logic.py::test_default_bitrate_is_250` — passed
+  - ✅ `tests/test_gui_logic.py::test_default_bitrate_is_500` — passed
 
 ### REQ-FUNC-INT-006
 
@@ -119,6 +125,42 @@ This document summarizes the latest test run and the verification status of the 
 - Status: [x] Verified
 - Tests:
   - ✅ `tests/test_gui_logic.py::test_latest_frames_view_exists` — passed
+
+### REQ-FUNC-INT-011
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
+
+### REQ-FUNC-INT-012
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
+
+### REQ-FUNC-INT-013
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
+
+### REQ-FUNC-INT-014
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
+
+### REQ-FUNC-INT-015
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
+
+### REQ-FUNC-INT-016
+
+- Status: [ ] Not Started
+- Tests:
+  - ➖ No tests mapped yet
 
 ### REQ-FUNC-LOG-001
 
