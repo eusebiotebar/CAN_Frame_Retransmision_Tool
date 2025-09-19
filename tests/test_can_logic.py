@@ -166,7 +166,8 @@ def test_signals_are_emitted_for_frames(virtual_can_buses):
         retransmitted_frames.append(msg)
         retransmitted_event.set()
 
-    worker = CANWorker(input_config, output_config, {})
+    # Signals are emitted only for frames matching rewrite rules; use identity mapping
+    worker = CANWorker(input_config, output_config, {0x123: 0x123})
     worker.frame_received.connect(on_receive, type=Qt.ConnectionType.DirectConnection)
     worker.frame_retransmitted.connect(on_retransmit, type=Qt.ConnectionType.DirectConnection)
 
@@ -302,7 +303,7 @@ def test_bus_off_condition_reported(monkeypatch):
         error_message = msg
         error_event.set()
 
-    worker.error_occurred.connect(on_error, type=Qt.ConnectionType.DirectConnection)
+    worker.error_occurred.connect(on_error)
 
     # Run synchronously (will error on first recv)
     worker.run()
@@ -358,12 +359,15 @@ def test_auto_recovery_after_bus_off(monkeypatch):
             return None
 
     class DummyOutputBus:
-        def send(self, msg):  # noqa: ARG002
+        def send(self, msg, timeout: float | None = None):  # noqa: ARG002, ARG003
             retransmitted.append(msg)
             evt.set()
             return None
 
         def shutdown(self):
+            return None
+        # Needed because worker also polls output bus for reverse relay
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
             return None
 
     # Prepare sequence of Bus() creations: input fail, output, input recovered, output
@@ -425,10 +429,13 @@ def test_recovery_exhaustion_emits_error(monkeypatch):
             return None
 
     class DummyOutputBus:
-        def send(self, msg):  # noqa: ARG002
+        def send(self, msg, timeout: float | None = None):  # noqa: ARG002, ARG003
             return None
 
         def shutdown(self):
+            return None
+        # Provide recv() to avoid AttributeError during reverse polling
+        def recv(self, timeout: float | None = None):  # noqa: ARG002
             return None
 
     # Always return a failing input bus and dummy output bus (no recovery possible)

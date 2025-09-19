@@ -109,12 +109,12 @@ def test_channel_detection_signal(mock_detect_kvaser, mock_detect_win, mock_dete
 # --- GUI behavior tests (REQ-FUNC-INT-002 .. 010) ---
 
 
-def test_default_bitrate_is_250(qapp):
+def test_default_bitrate_is_500(qapp):
     """
-    REQ-FUNC-INT-005: Upon startup or channel selection, bitrate defaults to 250 kbps.
+    REQ-FUNC-INT-005: Upon startup or channel selection, bitrate defaults to 500 kbps.
     """
     win = MainWindow()
-    assert win.bitrate_combo.currentText() == "250"
+    assert win.bitrate_combo.currentText() == "500"
 
 
 def test_two_distinct_selectors_for_channels(qapp):

@@ -74,73 +74,98 @@ class CANWorker(QObject):
                 raise (self._last_open_error or RuntimeError("Failed to open CAN buses"))
 
             while self._is_running:
+                # Narrow types for static analysis and ensure buses are ready
+                assert self.input_bus is not None
+                assert self.output_bus is not None
+
+                # Poll Input bus (Input -> Output path with optional rewrite)
                 try:
-                    # Narrow types for static analysis and ensure buses are ready
-                    assert self.input_bus is not None
-                    assert self.output_bus is not None
-                    msg = self.input_bus.recv(timeout=0.5)
-                    # Successful receive: reset bus-off streak
-                    self._busoff_streak = 0
-                except Exception as e:  # Handle transient CAN errors such as bus-off
-                    # REQ-NFR-REL-001: attempt auto-recovery when bus-off occurs or input bus broken
+                    msg_in = self.input_bus.recv(timeout=0.01)
+                    if msg_in:
+                        self._busoff_streak = 0
+                        new_id = self.rewrite_rules.get(msg_in.arbitration_id)
+                        if new_id is not None:
+                            # Emit RX only for frames that will be transformed
+                            self.frame_received.emit(msg_in)
+                            new_msg = can.Message(
+                                arbitration_id=new_id,
+                                data=msg_in.data,
+                                dlc=msg_in.dlc,
+                                is_extended_id=msg_in.is_extended_id,
+                                timestamp=time.time(),
+                            )
+                            if self._send_with_retry_on(self.output_bus, new_msg):
+                                self.frame_retransmitted.emit(new_msg)
+                            else:
+                                self.error_occurred.emit(
+                                    "TX buffer overflow: dropped a rewritten frame after retries"
+                                )
+                        else:
+                            # Passthrough silently
+                            retransmitted_msg = can.Message(
+                                arbitration_id=msg_in.arbitration_id,
+                                data=msg_in.data,
+                                dlc=msg_in.dlc,
+                                is_extended_id=msg_in.is_extended_id,
+                                timestamp=time.time(),
+                            )
+                            if not self._send_with_retry_on(self.output_bus, retransmitted_msg):
+                                self.error_occurred.emit(
+                                    "TX buffer overflow: dropped a frame after retries"
+                                )
+                except Exception as e:
+                    # Handle transient CAN errors such as bus-off
                     text = str(e).lower()
                     looks_bus_off = ("bus off" in text) or isinstance(
                         e, (can.CanError, AttributeError)
                     )
                     if self._retry_on_busoff and looks_bus_off:
-                        # Enforce maximum consecutive recovery attempts
                         if self._busoff_streak >= max(0, self._max_retries):
                             self.recovery_failed.emit()
                             raise can.CanError("bus off") from e
                         self._busoff_streak += 1
-                        # Inform listeners that recovery will be attempted
                         self.recovery_started.emit()
-                        recovered = self._attempt_recovery()
-                        if recovered:
+                        if self._attempt_recovery():
                             self.recovery_succeeded.emit()
-                            # Continue loop and try receiving again
                             continue
-                        # If not recovered, escalate as bus-off for consistent reporting
                         self.recovery_failed.emit()
                         raise can.CanError("bus off") from e
-                    # Propagate to outer handler
                     raise
-                if msg:
-                    new_id = self.rewrite_rules.get(msg.arbitration_id)
 
-                    if new_id is not None:
-                        # Emit RX only for frames that will be transformed
-                        self.frame_received.emit(msg)
-                        new_msg = can.Message(
-                            arbitration_id=new_id,
-                            data=msg.data,
-                            dlc=msg.dlc,
-                            is_extended_id=msg.is_extended_id,
+                # Poll Output bus (Output -> Input path, always passthrough, no rewrite)
+                try:
+                    msg_out = self.output_bus.recv(timeout=0.01)
+                    if msg_out:
+                        self._busoff_streak = 0
+                        back_msg = can.Message(
+                            arbitration_id=msg_out.arbitration_id,
+                            data=msg_out.data,
+                            dlc=msg_out.dlc,
+                            is_extended_id=msg_out.is_extended_id,
                             timestamp=time.time(),
                         )
-                        assert self.output_bus is not None
-                        if self._send_with_retry(new_msg):
-                            self.frame_retransmitted.emit(new_msg)
-                        else:
-                            # Drop frame after exhausting retries; report but continue running
-                            self.error_occurred.emit(
-                                "TX buffer overflow: dropped a rewritten frame after retries"
-                            )
-                    else:
-                        # Passthrough: Create a new message from the original to get a fresh timestamp
-                        retransmitted_msg = can.Message(
-                            arbitration_id=msg.arbitration_id,
-                            data=msg.data,
-                            dlc=msg.dlc,
-                            is_extended_id=msg.is_extended_id,
-                            timestamp=time.time(),
-                        )
-                        assert self.output_bus is not None
-                        # Retransmit silently (do not emit RX/TX to keep tables/logs limited to transformed IDs)
-                        if not self._send_with_retry(retransmitted_msg):
+                        # Retransmit silently to Input
+                        if not self._send_with_retry_on(self.input_bus, back_msg):
                             self.error_occurred.emit(
                                 "TX buffer overflow: dropped a frame after retries"
                             )
+                except Exception as e:
+                    text = str(e).lower()
+                    looks_bus_off = ("bus off" in text) or isinstance(
+                        e, (can.CanError, AttributeError)
+                    )
+                    if self._retry_on_busoff and looks_bus_off:
+                        if self._busoff_streak >= max(0, self._max_retries):
+                            self.recovery_failed.emit()
+                            raise can.CanError("bus off") from e
+                        self._busoff_streak += 1
+                        self.recovery_started.emit()
+                        if self._attempt_recovery():
+                            self.recovery_succeeded.emit()
+                            continue
+                        self.recovery_failed.emit()
+                        raise can.CanError("bus off") from e
+                    raise
 
         except Exception as e:
             self.error_occurred.emit(f"Error in CAN worker: {e}")
@@ -161,8 +186,23 @@ class CANWorker(QObject):
     def _open_buses(self) -> bool:
         """Open input/output buses according to configs. Returns True on success."""
         try:
-            self.input_bus = can.interface.Bus(**self.input_config)
-            self.output_bus = can.interface.Bus(**self.output_config)
+            # Prefer not to receive our own transmitted frames to avoid echo loops
+            in_cfg = dict(self.input_config)
+            out_cfg = dict(self.output_config)
+            if "receive_own_messages" not in in_cfg:
+                in_cfg["receive_own_messages"] = False
+            if "receive_own_messages" not in out_cfg:
+                out_cfg["receive_own_messages"] = False
+
+            try:
+                self.input_bus = can.interface.Bus(**in_cfg)
+            except TypeError:
+                self.input_bus = can.interface.Bus(**self.input_config)
+
+            try:
+                self.output_bus = can.interface.Bus(**out_cfg)
+            except TypeError:
+                self.output_bus = can.interface.Bus(**self.output_config)
             return True
         except Exception as e:
             self._last_open_error = e
@@ -239,6 +279,42 @@ class CANWorker(QObject):
                 return False
         return False
 
+    def _send_with_retry_on(self, bus: can.BusABC, msg: can.Message) -> bool:
+        """Generalized send retry/backoff to a specific bus (Input or Output)."""
+        # Respect minimum gap globally
+        if self._tx_min_gap > 0.0 and self._last_tx_time > 0.0:
+            now = time.time()
+            elapsed = now - self._last_tx_time
+            remaining = self._tx_min_gap - elapsed
+            if remaining > 0:
+                time.sleep(remaining)
+
+        delay = max(0.0, self._send_retry_initial_delay)
+        attempts = max(1, self._max_send_retries)
+        for attempt in range(1, attempts + 1):
+            try:
+                bus.send(msg, timeout=0.1)
+                self._last_tx_time = time.time()
+                return True
+            except can.CanError as e:
+                text = str(e).lower()
+                is_overflow = (
+                    "overflow" in text
+                    or "tx buffer" in text
+                    or "transmit buffer" in text
+                    or "-13" in text
+                )
+                if is_overflow and attempt < attempts and self._is_running:
+                    time.sleep(delay)
+                    delay = min(delay * 2.0, 0.2)
+                    continue
+                if is_overflow and self._tx_overflow_cooldown > 0.0:
+                    time.sleep(self._tx_overflow_cooldown)
+                return False
+            except Exception:
+                return False
+        return False
+
 
 class CANManager(QObject):
     """
@@ -259,6 +335,7 @@ class CANManager(QObject):
         self._thread: QThread | None = None
         self.worker: CANWorker | None = None
         self._frame_logger: FrameLogger | None = None
+        self._throttle_opts: dict[str, float | int] = {}
 
     def detect_channels(self):
         """Detects available CAN channels including physical devices."""
@@ -455,7 +532,17 @@ class CANManager(QObject):
 
         self._thread = QThread()
         self._thread.setObjectName("CANThread")
-        self.worker = CANWorker(input_config, output_config, rewrite_rules)
+        # Resolve throttle options with safe defaults matching CANWorker
+        opts = self._throttle_opts
+        self.worker = CANWorker(
+            input_config,
+            output_config,
+            rewrite_rules,
+            max_send_retries=int(opts.get("max_send_retries", 10)),
+            send_retry_initial_delay=float(opts.get("send_retry_initial_delay", 0.01)),
+            tx_min_gap=float(opts.get("tx_min_gap", 0.0)),
+            tx_overflow_cooldown=float(opts.get("tx_overflow_cooldown", 0.05)),
+        )
         self.worker.moveToThread(self._thread)
 
         # Forward signals from worker to the manager's signals
@@ -478,6 +565,22 @@ class CANManager(QObject):
         self._thread.finished.connect(self._thread.deleteLater)
 
         self._thread.start()
+
+    def set_throttle_options(
+        self,
+        *,
+        max_send_retries: int,
+        send_retry_initial_delay: float,
+        tx_min_gap: float,
+        tx_overflow_cooldown: float,
+    ) -> None:
+        """Set throttling/backpressure options used when creating the worker."""
+        self._throttle_opts = {
+            "max_send_retries": int(max(1, max_send_retries)),
+            "send_retry_initial_delay": float(max(0.0, send_retry_initial_delay)),
+            "tx_min_gap": float(max(0.0, tx_min_gap)),
+            "tx_overflow_cooldown": float(max(0.0, tx_overflow_cooldown)),
+        }
 
     def stop_retransmission(self):
         """Stops the CAN retransmission thread."""

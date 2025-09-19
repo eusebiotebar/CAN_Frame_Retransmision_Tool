@@ -12,9 +12,19 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
-                             QLabel, QLineEdit, QMainWindow, QMessageBox,
-                             QPushButton, QTableWidget, QTableWidgetItem)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
@@ -42,6 +52,11 @@ class MainWindow(QMainWindow):
     log_level_combo: QComboBox
     log_file_path_edit: QLineEdit
     browse_log_file_button: QPushButton
+    # Advanced throttling controls
+    max_send_retries_edit: QLineEdit
+    send_retry_initial_delay_edit: QLineEdit
+    tx_min_gap_edit: QLineEdit
+    tx_overflow_cooldown_edit: QLineEdit
     actionAcerca_de: Any  # QAction
     connection_group: QGroupBox
     mapping_group: QGroupBox
@@ -198,7 +213,7 @@ class MainWindow(QMainWindow):
             return
         try:
             rows: list[tuple[str, str]] = []
-            with open(fileName, "r", encoding="utf-8") as f:
+            with open(fileName, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line:
@@ -315,6 +330,37 @@ class MainWindow(QMainWindow):
             "channel": output_data["channel"],
             "bitrate": bitrate,
         }
+        # Apply throttle options if provided (fall back to defaults when empty)
+        def _get_float(line: QLineEdit | None, default: float) -> float:
+            try:
+                txt = line.text().strip() if line is not None else ""
+                return float(txt) if txt else default
+            except Exception:
+                return default
+
+        def _get_int(line: QLineEdit | None, default: int) -> int:
+            try:
+                txt = line.text().strip() if line is not None else ""
+                return int(txt) if txt else default
+            except Exception:
+                return default
+
+        max_send_retries = _get_int(getattr(self, "max_send_retries_edit", None), 10)
+        send_retry_initial_delay = _get_float(
+            getattr(self, "send_retry_initial_delay_edit", None), 0.01
+        )
+        tx_min_gap = _get_float(getattr(self, "tx_min_gap_edit", None), 0.0)
+        tx_overflow_cooldown = _get_float(
+            getattr(self, "tx_overflow_cooldown_edit", None), 0.05
+        )
+
+        self.can_manager.set_throttle_options(
+            max_send_retries=max_send_retries,
+            send_retry_initial_delay=send_retry_initial_delay,
+            tx_min_gap=tx_min_gap,
+            tx_overflow_cooldown=tx_overflow_cooldown,
+        )
+
         self.can_manager.start_retransmission(input_cfg, output_cfg, rewrite_rules, log_file)
         self.update_status("Retransmitting", "green")
         self.start_stop_button.setText("Stop")

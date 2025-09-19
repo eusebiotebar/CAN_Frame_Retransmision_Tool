@@ -335,6 +335,71 @@
         </layout>
        </widget>
       </item>
+       <item>
+        <widget class="QGroupBox" name="throttle_group">
+         <property name="title">
+          <string>Advanced Throttling</string>
+         </property>
+         <layout class="QGridLayout" name="throttle_layout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_max_retries">
+            <property name="text">
+             <string>Max Send Retries:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="max_send_retries_edit">
+            <property name="placeholderText">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_initial_delay">
+            <property name="text">
+             <string>Initial Retry Delay (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="send_retry_initial_delay_edit">
+            <property name="placeholderText">
+             <string>0.01</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_tx_min_gap">
+            <property name="text">
+             <string>TX Min Gap (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="tx_min_gap_edit">
+            <property name="placeholderText">
+             <string>0.0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_tx_cooldown">
+            <property name="text">
+             <string>Overflow Cooldown (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="tx_overflow_cooldown_edit">
+            <property name="placeholderText">
+             <string>0.05</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
      </layout>
     </item>
    </layout>
