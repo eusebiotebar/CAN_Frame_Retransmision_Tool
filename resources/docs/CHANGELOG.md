@@ -5,6 +5,96 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-01-29
+
+### Added (1.0.0)
+
+- **Major UI Restructuring**: Complete overhaul of the user interface for better usability and organization
+  - Added File menu with Import/Export ID Mapping and Exit options
+  - Added Settings menu with Preferences, Save Settings, and Load Settings options
+  - Created dedicated Settings dialog with tabbed interface for organized configuration
+
+- **Settings Management System**: Comprehensive settings management with persistence
+  - New Settings dialog with three organized tabs: Connection, Logging, and Advanced Throttling
+  - JSON-based settings file format for cross-platform compatibility
+  - Settings save/load functionality with file dialog integration
+  - Settings validation and error handling
+
+- **CSV Import/Export Enhancement**: Improved CSV handling with header support
+  - CSV files can now include header lines (automatically detected and skipped)
+  - Header detection based on common keywords and non-hex content
+  - Added header line to exported CSV files for clarity ("Original ID (Hex), Rewritten ID (Hex)")
+  - Enhanced error handling for malformed CSV files
+
+- **Advanced Throttling Controls**: Enhanced transmission control options
+  - Configurable retry behavior with max send retries setting
+  - Adjustable initial retry delay for failed transmissions
+  - Minimum transmission gap control to prevent bus flooding
+  - TX overflow cooldown settings for buffer management
+  - Reset to Defaults button for easy throttling parameter reset
+  - Comprehensive tooltips explaining each throttling parameter
+
+- **Comprehensive Test Suite**: Added extensive unit tests for new functionality
+  - Tests for CSV header detection and import/export with headers
+  - Settings dialog functionality validation
+  - Settings file save/load operations testing
+  - Error handling and edge case coverage
+
+- **Enhanced Documentation**: Updated technical specifications and requirements
+  - Added 6 new functional requirements (REQ-FUNC-INT-011 through REQ-FUNC-INT-016)
+  - Updated Software Requirements Specification (SRS) with new UI architecture
+  - Updated Software Requirements Verification Plan (SRVP) with corresponding test requirements
+  - Detailed documentation of new settings management system
+
+### Changed (1.0.0)
+
+- **UI Layout Reorganization**: Streamlined main window interface
+  - Removed Import/Export buttons from ID Mapping group (moved to File menu)
+  - Removed Connection, Logging, and Advanced Throttling groups from main window
+  - All connection and throttling settings now accessed via Settings dialog
+  - Cleaner, more focused main window design
+
+- **Settings Architecture**: Centralized configuration management
+  - Connection settings (input/output channels, bitrate) moved to Settings dialog
+  - Logging configuration moved to dedicated Logging tab in Settings dialog
+  - Advanced throttling options relocated to separate tab with enhanced controls
+  - Improved settings persistence with JSON format instead of scattered configurations
+
+- **Menu Integration**: Enhanced menu system for better accessibility
+  - File menu provides quick access to import/export functions
+  - Settings menu centralizes all configuration options
+  - Keyboard shortcuts added for common operations (Ctrl+I, Ctrl+E, Ctrl+S, etc.)
+
+### Improved (1.0.0)
+
+- **User Experience**: Significantly enhanced usability and workflow
+  - Tabbed settings dialog provides organized access to all configuration options
+  - Logical grouping of related settings reduces cognitive load
+  - Clear tooltips and descriptions for advanced settings
+  - Consistent file dialog integration across all save/load operations
+
+- **Code Organization**: Better separation of concerns and maintainability
+  - Dedicated SettingsDialog class with comprehensive functionality
+  - Modular settings management with get/set operations
+  - Improved signal-slot architecture for settings communication
+  - Enhanced error handling and validation throughout the application
+
+- **Data Persistence**: Robust configuration storage and retrieval
+  - JSON format provides human-readable and version-controllable settings
+  - Comprehensive error handling for file operations
+  - Settings validation ensures data integrity
+  - Graceful fallback to defaults when settings are missing or corrupted
+
+### Technical Notes (1.0.0)
+
+- This release represents a major milestone with substantial UI improvements and new functionality
+- All existing functionality preserved while significantly enhancing user experience
+- New modular architecture provides foundation for future feature additions
+- Comprehensive testing ensures reliability of new features
+- Backward compatibility maintained for existing ID mapping files
+
+---
+
 ## [0.9.4] - 2025-09-17
 
 ### Added (0.9.4)
