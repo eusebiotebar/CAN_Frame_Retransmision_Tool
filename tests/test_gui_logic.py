@@ -482,18 +482,18 @@ def test_header_line_detection():
     win = MainWindow()
     
     # Test obvious header lines
-    assert win._is_likely_header_line("Original ID", "New ID") == True
-    assert win._is_likely_header_line("FROM", "TO") == True
-    assert win._is_likely_header_line("Source CAN ID", "Target ID") == True
+    assert win._is_likely_header_line("Original ID", "New ID")
+    assert win._is_likely_header_line("FROM", "TO")
+    assert win._is_likely_header_line("Source CAN ID", "Target ID")
     
     # Test valid hex data (should not be detected as header)
-    assert win._is_likely_header_line("100", "200") == False
-    assert win._is_likely_header_line("0x1A2B", "0x3C4D") == False
-    assert win._is_likely_header_line("ABC", "DEF") == False
+    assert not win._is_likely_header_line("100", "200")
+    assert not win._is_likely_header_line("0x1A2B", "0x3C4D")
+    assert not win._is_likely_header_line("ABC", "DEF")
     
     # Test mixed cases
-    assert win._is_likely_header_line("ID", "Value") == True
-    assert win._is_likely_header_line("old_id", "new_id") == True
+    assert win._is_likely_header_line("ID", "Value")
+    assert win._is_likely_header_line("old_id", "new_id")
 
 
 def test_csv_import_with_headers(qapp, tmp_path, monkeypatch):
