@@ -87,11 +87,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Notes (1.0.0)
 
-- This release represents a major milestone with substantial UI improvements and new functionality
-- All existing functionality preserved while significantly enhancing user experience
-- New modular architecture provides foundation for future feature additions
-- Comprehensive testing ensures reliability of new features
-- Backward compatibility maintained for existing ID mapping files
+- This release represents a major milestone with substantial UI improvements and new functionality.
+- All existing functionality preserved while significantly enhancing user experience.
+- New modular architecture provides foundation for future feature additions.
+- Comprehensive testing ensures reliability of new features.
+- Backward compatibility maintained for existing ID mapping files.
 
 ---
 

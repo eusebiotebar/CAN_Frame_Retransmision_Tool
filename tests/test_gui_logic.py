@@ -476,7 +476,11 @@ def test_recovery_signals_update_status(qapp):
 
 
 def test_header_line_detection():
-    """Test that header lines are correctly detected and skipped."""
+    """
+    Covers: REQ-FUNC-INT-013
+
+    Test that header lines are correctly detected and skipped.
+    """
     from core.gui import MainWindow
     
     win = MainWindow()
@@ -497,7 +501,11 @@ def test_header_line_detection():
 
 
 def test_csv_import_with_headers(qapp, tmp_path, monkeypatch):
-    """Test CSV import functionality with header lines."""
+    """
+    Covers: REQ-FUNC-INT-013
+
+    Test CSV import functionality with header lines.
+    """
     # Create a CSV file with headers
     csv_file = tmp_path / "test_mapping.csv"
     csv_content = """Original ID,Rewritten ID
@@ -520,16 +528,26 @@ ABC,DEF
     assert win.mapping_table.rowCount() == 3
     
     # Check the actual data
-    assert win.mapping_table.item(0, 0).text() == "100"
-    assert win.mapping_table.item(0, 1).text() == "200"
-    assert win.mapping_table.item(1, 0).text() == "ABC"
-    assert win.mapping_table.item(1, 1).text() == "DEF"
-    assert win.mapping_table.item(2, 0).text() == "1A2"
-    assert win.mapping_table.item(2, 1).text() == "3B4"
+    it = win.mapping_table.item(0, 0)
+    assert it is not None and it.text() == "100"
+    it = win.mapping_table.item(0, 1)
+    assert it is not None and it.text() == "200"
+    it = win.mapping_table.item(1, 0)
+    assert it is not None and it.text() == "ABC"
+    it = win.mapping_table.item(1, 1)
+    assert it is not None and it.text() == "DEF"
+    it = win.mapping_table.item(2, 0)
+    assert it is not None and it.text() == "1A2"
+    it = win.mapping_table.item(2, 1)
+    assert it is not None and it.text() == "3B4"
 
 
 def test_csv_export_with_headers(qapp, tmp_path, monkeypatch):
-    """Test CSV export functionality that includes header lines."""
+    """
+    Covers: REQ-FUNC-INT-014
+
+    Test CSV export functionality that includes header lines.
+    """
     # Mock the file dialog to return our test file
     export_file = tmp_path / "exported_mapping.csv"
     monkeypatch.setattr("PyQt6.QtWidgets.QFileDialog.getSaveFileName", 
@@ -558,7 +576,11 @@ def test_csv_export_with_headers(qapp, tmp_path, monkeypatch):
 
 
 def test_settings_dialog_creation(qapp):
-    """Test that settings dialog can be created and initialized."""
+    """
+    Covers: REQ-FUNC-INT-015
+
+    Test that settings dialog can be created and initialized.
+    """
     from core.gui import MainWindow
     from core.settings_dialog import SettingsDialog
     
@@ -566,14 +588,18 @@ def test_settings_dialog_creation(qapp):
     dialog = SettingsDialog(parent)
     
     # Test that dialog has the expected tabs
-    assert dialog.tabs.count() == 3
-    assert dialog.tabs.tabText(0) == "Connection"
-    assert dialog.tabs.tabText(1) == "Logging" 
-    assert dialog.tabs.tabText(2) == "Advanced Throttling"
+    assert dialog.settingsTabWidget.count() == 3
+    assert dialog.settingsTabWidget.tabText(0) == "Connection"
+    assert dialog.settingsTabWidget.tabText(1) == "Logging"
+    assert dialog.settingsTabWidget.tabText(2) == "Advanced Throttling"
 
 
 def test_settings_dialog_get_set_settings(qapp):
-    """Test settings dialog get/set functionality."""
+    """
+    Covers: REQ-FUNC-INT-015, REQ-FUNC-INT-016
+
+    Test settings dialog get/set functionality.
+    """
     from core.gui import MainWindow
     from core.settings_dialog import SettingsDialog
     
@@ -613,7 +639,11 @@ def test_settings_dialog_get_set_settings(qapp):
 
 
 def test_settings_file_save_load(qapp, tmp_path):
-    """Test settings dialog file save/load functionality."""
+    """
+    Covers: REQ-FUNC-INT-016
+
+    Test settings dialog file save/load functionality.
+    """
     from core.gui import MainWindow
     from core.settings_dialog import SettingsDialog
     
@@ -653,7 +683,11 @@ def test_settings_file_save_load(qapp, tmp_path):
 
 
 def test_main_window_settings_integration(qapp):
-    """Test that main window properly integrates with settings dialog."""
+    """
+    Covers: REQ-FUNC-INT-012, REQ-FUNC-INT-015
+
+    Test that main window properly integrates with settings dialog.
+    """
     win = MainWindow()
     
     # Test initial settings exist
@@ -669,7 +703,11 @@ def test_main_window_settings_integration(qapp):
 
 
 def test_menu_actions_exist(qapp):
-    """Test that all new menu actions are properly connected."""
+    """
+    Covers: REQ-FUNC-INT-011, REQ-FUNC-INT-012
+
+    Test that all new menu actions are properly connected.
+    """
     win = MainWindow()
     
     # Test that menu actions exist
@@ -682,7 +720,11 @@ def test_menu_actions_exist(qapp):
 
 
 def test_csv_import_mixed_separators(qapp, tmp_path, monkeypatch):
-    """Test CSV import with different separators and malformed lines."""
+    """
+    Covers: REQ-FUNC-INT-013
+
+    Test CSV import with different separators and malformed lines.
+    """
     csv_file = tmp_path / "mixed_separators.csv"
     csv_content = """Original ID;New ID
 100,200
@@ -704,7 +746,11 @@ invalid_line_with_one_column
     # Should have imported 4 valid rows (excluding header, comments, empty lines, invalid lines)
     assert win.mapping_table.rowCount() == 4
     
-    assert win.mapping_table.item(0, 0).text() == "100"
-    assert win.mapping_table.item(1, 0).text() == "ABC"  
-    assert win.mapping_table.item(2, 0).text() == "1A2"
-    assert win.mapping_table.item(3, 0).text() == "5E6"
+    it = win.mapping_table.item(0, 0)
+    assert it is not None and it.text() == "100"
+    it = win.mapping_table.item(1, 0)
+    assert it is not None and it.text() == "ABC"
+    it = win.mapping_table.item(2, 0)
+    assert it is not None and it.text() == "1A2"
+    it = win.mapping_table.item(3, 0)
+    assert it is not None and it.text() == "5E6"
