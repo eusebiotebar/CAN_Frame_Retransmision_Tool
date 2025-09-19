@@ -124,6 +124,21 @@ The system consists of the following main components:
 * **Frame Processor:** Applies CAN ID rewriting rules based on user configuration.
 * **Logging Module:** Manages logging of application events and errors.
 
+#### User Interface Architecture
+
+The user interface follows a modern desktop application design with:
+
+* **Main Window:** Contains the primary controls for CAN frame retransmission and monitoring.
+* **Menu Bar:** Provides File and Settings menus for accessing import/export and configuration functions.
+* **Settings Dialog:** A tabbed dialog providing organized access to all configuration options:
+  * Connection Tab: CAN channel selection and bitrate configuration
+  * Logging Tab: Log file path and logging level settings
+  * Advanced Throttling Tab: Performance tuning parameters
+* **ID Mapping Table:** Interactive table for defining CAN ID rewrite rules.
+* **Frame Display Tables:** Real-time views of received and transmitted CAN frames.
+
+This architecture separates the main operational interface from configuration settings, providing a cleaner user experience and better organization of functionality.
+
 The following diagram illustrates the system architecture:
 
 <!-- [MermaidChart: 4c25a8ed-02e0-4709-8952-3df4cf91a5e7] -->
@@ -183,6 +198,12 @@ flowchart TD
 | REQ-FUNC-INT-008      | The system SHALL provide a "Start/Stop Frame Retransmission" button on the GUI.                                                                                                | High     |
 | REQ-FUNC-INT-009      | The system SHALL display a status indicator on the GUI.                                                                                                                        | High     |
 | REQ-FUNC-INT-010      | The system SHALL display a table or list view of the latest received CAN frames on the GUI.                                                                                    | High     |
+| REQ-FUNC-INT-011      | The system SHALL provide a File menu with Import and Export options for CAN ID mapping files.                                                                                  | Medium   |
+| REQ-FUNC-INT-012      | The system SHALL provide a Settings menu with options to configure connection parameters, logging settings, and advanced throttling options.                                   | Medium   |
+| REQ-FUNC-INT-013      | The system SHALL support importing CAN ID mapping files with CSV header lines, automatically detecting and skipping header content.                                            | Medium   |
+| REQ-FUNC-INT-014      | The system SHALL export CAN ID mapping files with descriptive header lines for improved readability.                                                                           | Low      |
+| REQ-FUNC-INT-015      | The system SHALL provide a tabbed Settings dialog with separate tabs for Connection, Logging, and Advanced Throttling configuration.                                          | Medium   |
+| REQ-FUNC-INT-016      | The system SHALL allow saving and loading of complete application settings to/from JSON configuration files.                                                                    | Medium   |
 
 ### Functions
 

@@ -102,67 +102,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="vertical_Control_Layout" stretch="0,0,0,0">
-      <item>
-       <widget class="QGroupBox" name="connection_group">
-    <property name="title">
-     <string>Connection Settings</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_connection">
-         <item row="1" column="1">
-          <widget class="QComboBox" name="output_channel_combo"/>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_bitrate">
-           <property name="text">
-            <string>Bitrate (kbps):</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="bitrate_combo">
-           <item>
-            <property name="text">
-             <string>125</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>250</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>500</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>1000</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_input_channel">
-           <property name="text">
-            <string>Input Channel:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_output_channel">
-           <property name="text">
-            <string>Output Channel:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="input_channel_combo"/>
-         </item>
-        </layout>
-       </widget>
-      </item>
+     <layout class="QVBoxLayout" name="vertical_Control_Layout" stretch="0,0,0">
       <item>
        <widget class="QGroupBox" name="mapping_group">
     <property name="title">
@@ -191,7 +131,7 @@
               <enum>Qt::Orientation::Horizontal</enum>
              </property>
              <property name="sizeType">
-              <enum>QSizePolicy::Policy::Fixed</enum>
+              <enum>QSizePolicy::Policy::Expanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -215,36 +155,6 @@
              </property>
             </widget>
            </item>
-                   <item>
-                     <spacer name="mapping_buttons_spacer_2">
-                      <property name="orientation">
-                        <enum>Qt::Orientation::Horizontal</enum>
-                      </property>
-                      <property name="sizeType">
-                        <enum>QSizePolicy::Policy::Expanding</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                      </property>
-                     </spacer>
-                   </item>
-                   <item>
-                     <widget class="QPushButton" name="import_mapping_button">
-                      <property name="text">
-                        <string>Import...</string>
-                      </property>
-                     </widget>
-                   </item>
-                   <item>
-                     <widget class="QPushButton" name="export_mapping_button">
-                      <property name="text">
-                        <string>Export...</string>
-                      </property>
-                     </widget>
-                   </item>
           </layout>
          </item>
         </layout>
@@ -305,101 +215,6 @@
         </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QGroupBox" name="logging_group">
-    <property name="title">
-     <string>Logging Settings</string>
-        </property>
-        <layout class="QGridLayout" name="logging_layout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_log_file">
-           <property name="text">
-            <string>Log File:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="log_file_path_edit">
-           <property name="placeholderText">
-            <string>Optional: path to log file</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QPushButton" name="browse_log_file_button">
-           <property name="text">
-            <string>Browse...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-       <item>
-        <widget class="QGroupBox" name="throttle_group">
-         <property name="title">
-          <string>Advanced Throttling</string>
-         </property>
-         <layout class="QGridLayout" name="throttle_layout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_max_retries">
-            <property name="text">
-             <string>Max Send Retries:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="max_send_retries_edit">
-            <property name="placeholderText">
-             <string>10</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_initial_delay">
-            <property name="text">
-             <string>Initial Retry Delay (s):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="send_retry_initial_delay_edit">
-            <property name="placeholderText">
-             <string>0.01</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_tx_min_gap">
-            <property name="text">
-             <string>TX Min Gap (s):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="tx_min_gap_edit">
-            <property name="placeholderText">
-             <string>0.0</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_tx_cooldown">
-            <property name="text">
-             <string>Overflow Cooldown (s):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="tx_overflow_cooldown_edit">
-            <property name="placeholderText">
-             <string>0.05</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
      </layout>
     </item>
    </layout>
@@ -413,20 +228,88 @@
      <height>21</height>
     </rect>
    </property>
-    <widget class="QMenu" name="menuAyuda">
-     <property name="title">
-      <string>&amp;Help</string>
-     </property>
-     <addaction name="actionAcerca_de"/>
-    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionImport"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>&amp;Settings</string>
+    </property>
+    <addaction name="actionOpenSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionSaveSettings"/>
+    <addaction name="actionLoadSettings"/>
+   </widget>
+   <widget class="QMenu" name="menuAyuda">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAcerca_de"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuAyuda"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-    <action name="actionAcerca_de">
-     <property name="text">
-        <string>&amp;About...</string>
-     </property>
-    </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>&amp;Import ID Mapping...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>&amp;Export ID Mapping...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionOpenSettings">
+   <property name="text">
+    <string>&amp;Preferences...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+,</string>
+   </property>
+  </action>
+  <action name="actionSaveSettings">
+   <property name="text">
+    <string>&amp;Save Settings...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoadSettings">
+   <property name="text">
+    <string>&amp;Load Settings...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionAcerca_de">
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

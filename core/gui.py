@@ -12,22 +12,14 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QFileDialog, QGroupBox,
+                             QHeaderView, QLabel, QLineEdit, QMainWindow,
+                             QMessageBox, QPushButton, QTableWidget,
+                             QTableWidgetItem)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
+from .settings_dialog import SettingsDialog
 from .utils import RuleParsingError, get_resource_path, parse_rewrite_rules
 from .version import __version__
 
@@ -36,29 +28,23 @@ class MainWindow(QMainWindow):
     """Main application window."""
 
     # Hints for linters to know the attributes injected by loadUi
-    input_channel_combo: QComboBox
-    output_channel_combo: QComboBox
-    bitrate_combo: QComboBox
-    start_stop_button: QPushButton
-    status_label: QLabel
-    status_indicator: QLabel
+    # Note: Connection, logging, and throttling controls are now in settings dialog
     frames_table_RX: QTableWidget
     frames_table_TX: QTableWidget
     mapping_table: QTableWidget
     add_rule_button: QPushButton
     delete_rule_button: QPushButton
-    import_mapping_button: QPushButton
-    export_mapping_button: QPushButton
-    log_level_combo: QComboBox
-    log_file_path_edit: QLineEdit
-    browse_log_file_button: QPushButton
-    # Advanced throttling controls
-    max_send_retries_edit: QLineEdit
-    send_retry_initial_delay_edit: QLineEdit
-    tx_min_gap_edit: QLineEdit
-    tx_overflow_cooldown_edit: QLineEdit
+    start_stop_button: QPushButton
+    status_label: QLabel
+    status_indicator: QLabel
+    # Menu actions
+    actionImport: Any  # QAction
+    actionExport: Any  # QAction
+    actionExit: Any  # QAction
+    actionOpenSettings: Any  # QAction
+    actionSaveSettings: Any  # QAction
+    actionLoadSettings: Any  # QAction
     actionAcerca_de: Any  # QAction
-    connection_group: QGroupBox
     mapping_group: QGroupBox
 
     def __init__(self) -> None:
@@ -81,8 +67,28 @@ class MainWindow(QMainWindow):
                     self.setWindowIcon(QIcon(str(svg_path)))
         except Exception:
             pass
+        
         self.can_manager = CANManager()
         self.is_running = False
+        self.settings_dialog = None
+        
+        # Current settings (will be managed through settings dialog)
+        self.current_settings = {
+            "connection": {
+                "input_channel_index": 0,
+                "output_channel_index": 1,
+                "bitrate": "500",
+            },
+            "logging": {
+                "log_file_path": "",
+            },
+            "throttling": {
+                "max_send_retries": "10",
+                "send_retry_initial_delay": "0.01",
+                "tx_min_gap": "0.0",
+                "tx_overflow_cooldown": "0.05",
+            },
+        }
 
         self._configure_widgets()
         self._connect_signals()
@@ -104,17 +110,10 @@ class MainWindow(QMainWindow):
         if m_header is not None:
             m_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        # Default bitrate
-        idx = self.bitrate_combo.findText("500")
-        if idx >= 0:
-            self.bitrate_combo.setCurrentIndex(idx)
-
         # About action
         if getattr(self, "actionAcerca_de", None):
             with contextlib.suppress(Exception):  # pragma: no cover
                 self.actionAcerca_de.triggered.connect(self._show_about_dialog)
-
-        self._set_default_log_path()
 
     def _configure_frame_table(self, table: QTableWidget) -> None:
         """Configure a frame table with standard settings."""
@@ -130,7 +129,6 @@ class MainWindow(QMainWindow):
     # Signal connections
     # ------------------------------------------------------------------
     def _connect_signals(self) -> None:
-        self.can_manager.channels_detected.connect(self._populate_channel_selectors)
         self.can_manager.error_occurred.connect(self._handle_error)
         self.can_manager.frame_received.connect(self._add_received_frame_to_view)
         self.can_manager.frame_retransmitted.connect(self._add_transmitted_frame_to_view)
@@ -144,26 +142,26 @@ class MainWindow(QMainWindow):
         self.start_stop_button.clicked.connect(self._on_start_stop_clicked)
         self.add_rule_button.clicked.connect(self._on_add_rule)
         self.delete_rule_button.clicked.connect(self._on_delete_rule)
-        # Import/Export ID mapping
-        if getattr(self, "import_mapping_button", None):
-            self.import_mapping_button.clicked.connect(self._on_import_mapping)
-        if getattr(self, "export_mapping_button", None):
-            self.export_mapping_button.clicked.connect(self._on_export_mapping)
-        self.browse_log_file_button.clicked.connect(self._on_browse_log_file)
+        
+        # Menu actions - File menu
+        if getattr(self, "actionImport", None):
+            self.actionImport.triggered.connect(self._on_import_mapping)
+        if getattr(self, "actionExport", None):
+            self.actionExport.triggered.connect(self._on_export_mapping)
+        if getattr(self, "actionExit", None):
+            self.actionExit.triggered.connect(self.close)
+            
+        # Menu actions - Settings menu
+        if getattr(self, "actionOpenSettings", None):
+            self.actionOpenSettings.triggered.connect(self._on_open_settings)
+        if getattr(self, "actionSaveSettings", None):
+            self.actionSaveSettings.triggered.connect(self._on_save_settings)
+        if getattr(self, "actionLoadSettings", None):
+            self.actionLoadSettings.triggered.connect(self._on_load_settings)
 
     # ------------------------------------------------------------------
     # UI utilities
     # ------------------------------------------------------------------
-    def _populate_channel_selectors(self, channels) -> None:
-        self.input_channel_combo.clear()
-        self.output_channel_combo.clear()
-        for ch in channels:
-            display_name = ch.get("display_name", f"{ch['interface']}:{ch['channel']}")
-            self.input_channel_combo.addItem(display_name, userData=ch)
-            self.output_channel_combo.addItem(display_name, userData=ch)
-        if len(channels) > 1:
-            self.output_channel_combo.setCurrentIndex(1)
-
     def update_status(self, message: str, color: str) -> None:
         self.status_label.setText(message)
         self.status_indicator.setStyleSheet(f"background-color: {color}; border-radius: 10px;")
@@ -202,7 +200,8 @@ class MainWindow(QMainWindow):
             self.mapping_table.removeRow(self.mapping_table.currentRow())
 
     def _on_import_mapping(self) -> None:
-        """Import ID mapping from a CSV-like file with two hex columns."""
+        """Import ID mapping from a CSV-like file with two hex columns.
+        Now supports files with header lines."""
         fileName, _ = QFileDialog.getOpenFileName(
             self,
             "Import ID Mapping",
@@ -214,17 +213,28 @@ class MainWindow(QMainWindow):
         try:
             rows: list[tuple[str, str]] = []
             with open(fileName, encoding="utf-8") as f:
-                for line in f:
+                for line_num, line in enumerate(f, 1):
                     line = line.strip()
                     if not line:
                         continue
+                    
                     # Allow separators: comma or semicolon or whitespace
                     sep = "," if "," in line else ";" if ";" in line else None
                     parts = [p.strip() for p in (line.split(sep) if sep else line.split())]
                     if len(parts) < 2:
                         # Skip invalid/incomplete lines silently
                         continue
-                    rows.append((parts[0], parts[1]))
+                    
+                    # Try to detect header lines by checking if the values look like hex IDs
+                    # Header lines often contain text like "Original ID", "New ID", etc.
+                    orig_part = parts[0].strip()
+                    rew_part = parts[1].strip()
+                    
+                    # Skip potential header lines that don't look like hex values
+                    if self._is_likely_header_line(orig_part, rew_part):
+                        continue
+                    
+                    rows.append((orig_part, rew_part))
 
             # Validate by parsing with existing logic
             _ = parse_rewrite_rules(rows)
@@ -239,8 +249,44 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self._show_error_message("Import Error", f"Failed to import mapping: {e}")
 
+    def _is_likely_header_line(self, col1: str, col2: str) -> bool:
+        """Detect if a line is likely a header line rather than hex data."""
+        # Check for common header keywords
+        header_keywords = [
+            "original", "new", "source", "target", "from", "to", "id", "can", 
+            "old", "rewrite", "mapping", "input", "output", "hex"
+        ]
+        
+        col1_lower = col1.lower()
+        col2_lower = col2.lower()
+        
+        # If either column contains header keywords, it's likely a header
+        for keyword in header_keywords:
+            if keyword in col1_lower or keyword in col2_lower:
+                return True
+        
+        # Check if the values don't look like hex (CAN IDs are typically hex)
+        # Valid hex CAN IDs would be in format like 0x123, 123, etc.
+        try:
+            # Remove common hex prefixes for testing
+            test_col1 = col1.replace("0x", "").replace("0X", "")
+            test_col2 = col2.replace("0x", "").replace("0X", "")
+            
+            # If both values are pure hex digits (1-8 chars for CAN IDs), probably not a header
+            if (test_col1.isdigit() or all(c in "0123456789ABCDEFabcdef" for c in test_col1)) and \
+               (test_col2.isdigit() or all(c in "0123456789ABCDEFabcdef" for c in test_col2)) and \
+               1 <= len(test_col1) <= 8 and 1 <= len(test_col2) <= 8:
+                return False
+        except:
+            pass
+        
+        # If we can't determine it's hex data, treat as potential header if it contains non-hex chars
+        return not (col1.replace("0x", "").replace("0X", "").replace(" ", "").isalnum() and 
+                   col2.replace("0x", "").replace("0X", "").replace(" ", "").isalnum())
+
     def _on_export_mapping(self) -> None:
-        """Export current ID mapping to a CSV file with two hex columns."""
+        """Export current ID mapping to a CSV file with two hex columns.
+        Now includes header line for clarity."""
         fileName, _ = QFileDialog.getSaveFileName(
             self, "Export ID Mapping", "", "CSV files (*.csv);;All files (*)"
         )
@@ -262,6 +308,8 @@ class MainWindow(QMainWindow):
             _ = parse_rewrite_rules(rows)
 
             with open(fileName, "w", encoding="utf-8", newline="") as f:
+                # Write header line for clarity
+                f.write("Original ID,Rewritten ID\n")
                 for orig, rew in rows:
                     f.write(f"{orig.upper()},{rew.upper()}\n")
         except Exception as e:
@@ -287,7 +335,7 @@ class MainWindow(QMainWindow):
     # Execution control
     # ------------------------------------------------------------------
     def _set_controls_enabled(self, enabled: bool) -> None:
-        self.connection_group.setEnabled(enabled)
+        """Enable or disable UI controls based on running state."""
         self.mapping_group.setEnabled(enabled)
 
     def _on_start_stop_clicked(self) -> None:
@@ -299,26 +347,45 @@ class MainWindow(QMainWindow):
             self.is_running = False
             return
 
-        input_data = self.input_channel_combo.currentData()
-        output_data = self.output_channel_combo.currentData()
-        if not input_data or not output_data:
-            self._show_error_message("Configuration Error", "No channels detected or selected.")
+        # Get settings from current configuration
+        # For now, assume we have stored channels from the last detection
+        # In a more complete implementation, this would use stored channel data
+        channels = [
+            {"interface": "virtual", "channel": "vcan0", "display_name": "Virtual Channel 0"},
+            {"interface": "virtual", "channel": "vcan1", "display_name": "Virtual Channel 1"},
+        ]
+        
+        if not channels:
+            self._show_error_message("Configuration Error", "No channels detected.")
             return
+            
+        input_index = self.current_settings["connection"]["input_channel_index"]
+        output_index = self.current_settings["connection"]["output_channel_index"]
+        
+        if input_index >= len(channels) or output_index >= len(channels):
+            self._show_error_message("Configuration Error", "Selected channels are not available.")
+            return
+            
+        input_data = channels[input_index]
+        output_data = channels[output_index]
+        
         if input_data["channel"] == output_data["channel"]:
             self._show_error_message(
                 "Configuration Error", "Input and output channel cannot be the same."
             )
             return
+            
         try:
-            bitrate = int(self.bitrate_combo.currentText()) * 1000
+            bitrate = int(self.current_settings["connection"]["bitrate"]) * 1000
         except ValueError:
             self._show_error_message("Configuration Error", "Invalid bitrate.")
             return
+            
         rewrite_rules = self._get_rewrite_rules()
         if rewrite_rules is None:
             return
 
-        log_file = self.log_file_path_edit.text() or None
+        log_file = self.current_settings["logging"]["log_file_path"] or None
 
         input_cfg = {
             "interface": input_data["interface"],
@@ -330,28 +397,28 @@ class MainWindow(QMainWindow):
             "channel": output_data["channel"],
             "bitrate": bitrate,
         }
-        # Apply throttle options if provided (fall back to defaults when empty)
-        def _get_float(line: QLineEdit | None, default: float) -> float:
+        
+        # Apply throttle options from settings
+        def _get_float(value: str, default: float) -> float:
             try:
-                txt = line.text().strip() if line is not None else ""
-                return float(txt) if txt else default
+                return float(value) if value else default
             except Exception:
                 return default
 
-        def _get_int(line: QLineEdit | None, default: int) -> int:
+        def _get_int(value: str, default: int) -> int:
             try:
-                txt = line.text().strip() if line is not None else ""
-                return int(txt) if txt else default
+                return int(value) if value else default
             except Exception:
                 return default
 
-        max_send_retries = _get_int(getattr(self, "max_send_retries_edit", None), 10)
+        # Use throttling settings from current configuration
+        max_send_retries = _get_int(self.current_settings["throttling"]["max_send_retries"], 10)
         send_retry_initial_delay = _get_float(
-            getattr(self, "send_retry_initial_delay_edit", None), 0.01
+            self.current_settings["throttling"]["send_retry_initial_delay"], 0.01
         )
-        tx_min_gap = _get_float(getattr(self, "tx_min_gap_edit", None), 0.0)
+        tx_min_gap = _get_float(self.current_settings["throttling"]["tx_min_gap"], 0.0)
         tx_overflow_cooldown = _get_float(
-            getattr(self, "tx_overflow_cooldown_edit", None), 0.05
+            self.current_settings["throttling"]["tx_overflow_cooldown"], 0.05
         )
 
         self.can_manager.set_throttle_options(
@@ -401,33 +468,47 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, "About CAN ID Reframe Tool", about_text)
 
     # ------------------------------------------------------------------
-    # Logging
+    # Menu action handlers
     # ------------------------------------------------------------------
-    def _set_default_log_path(self) -> None:
-        """Generates and sets the default log file path."""
-        try:
-            # Determine the base path depending on whether the app is frozen
-            base_path = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path.cwd()
-
-            log_dir = base_path / "LOGS"
-            log_dir.mkdir(exist_ok=True)
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            app_name = "can-id-reframe"
-            log_file_name = f"{app_name}_{timestamp}_log.csv"
-
-            default_path = log_dir / log_file_name
-            self.log_file_path_edit.setText(str(default_path))
-        except Exception:
-            # If path generation fails, leave the field blank
-            self.log_file_path_edit.setText("")
-
-    def _on_browse_log_file(self) -> None:
-        fileName, _ = QFileDialog.getSaveFileName(
-            self, "Save Log As", "", "CSV files (*.csv);;All files (*)"
+    def _on_open_settings(self) -> None:
+        """Open the settings dialog."""
+        if self.settings_dialog is None:
+            self.settings_dialog = SettingsDialog(self)
+        
+        # Load current settings into dialog
+        self.settings_dialog.set_settings(self.current_settings)
+        
+        if self.settings_dialog.exec() == QDialog.DialogCode.Accepted:
+            # Get updated settings from dialog
+            self.current_settings = self.settings_dialog.get_settings()
+    
+    def _on_save_settings(self) -> None:
+        """Save current settings to a file."""
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Save Settings", "", "JSON files (*.json);;All files (*)"
         )
-        if fileName:
-            self.log_file_path_edit.setText(fileName)
+        if filename:
+            try:
+                import json
+                with open(filename, 'w') as f:
+                    json.dump(self.current_settings, f, indent=2)
+                QMessageBox.information(self, "Success", "Settings saved successfully!")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to save settings: {e}")
+    
+    def _on_load_settings(self) -> None:
+        """Load settings from a file."""
+        filename, _ = QFileDialog.getOpenFileName(
+            self, "Load Settings", "", "JSON files (*.json);;All files (*)"
+        )
+        if filename:
+            try:
+                import json
+                with open(filename, 'r') as f:
+                    self.current_settings = json.load(f)
+                QMessageBox.information(self, "Success", "Settings loaded successfully!")
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"Failed to load settings: {e}")
 
     # ------------------------------------------------------------------
     # Close event

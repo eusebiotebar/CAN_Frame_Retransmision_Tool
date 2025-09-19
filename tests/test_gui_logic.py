@@ -470,3 +470,241 @@ def test_recovery_signals_update_status(qapp):
     win.can_manager.recovery_succeeded.emit()
     assert win.status_label.text() == "Retransmitting"
     assert "green" in win.status_indicator.styleSheet()
+
+
+# --- Tests for new functionality (Settings Dialog and CSV Header Support) ---
+
+
+def test_header_line_detection():
+    """Test that header lines are correctly detected and skipped."""
+    from core.gui import MainWindow
+    
+    win = MainWindow()
+    
+    # Test obvious header lines
+    assert win._is_likely_header_line("Original ID", "New ID") == True
+    assert win._is_likely_header_line("FROM", "TO") == True
+    assert win._is_likely_header_line("Source CAN ID", "Target ID") == True
+    
+    # Test valid hex data (should not be detected as header)
+    assert win._is_likely_header_line("100", "200") == False
+    assert win._is_likely_header_line("0x1A2B", "0x3C4D") == False
+    assert win._is_likely_header_line("ABC", "DEF") == False
+    
+    # Test mixed cases
+    assert win._is_likely_header_line("ID", "Value") == True
+    assert win._is_likely_header_line("old_id", "new_id") == True
+
+
+def test_csv_import_with_headers(qapp, tmp_path, monkeypatch):
+    """Test CSV import functionality with header lines."""
+    # Create a CSV file with headers
+    csv_file = tmp_path / "test_mapping.csv"
+    csv_content = """Original ID,Rewritten ID
+100,200
+ABC,DEF
+0x1A2,0x3B4
+"""
+    csv_file.write_text(csv_content)
+    
+    # Mock the file dialog to return our test file
+    monkeypatch.setattr("PyQt6.QtWidgets.QFileDialog.getOpenFileName", 
+                       lambda *args, **kwargs: (str(csv_file), ""))
+    
+    win = MainWindow()
+    
+    # Call the import function
+    win._on_import_mapping()
+    
+    # Check that the mapping table was populated correctly (excluding header)
+    assert win.mapping_table.rowCount() == 3
+    
+    # Check the actual data
+    assert win.mapping_table.item(0, 0).text() == "100"
+    assert win.mapping_table.item(0, 1).text() == "200"
+    assert win.mapping_table.item(1, 0).text() == "ABC"
+    assert win.mapping_table.item(1, 1).text() == "DEF"
+    assert win.mapping_table.item(2, 0).text() == "1A2"
+    assert win.mapping_table.item(2, 1).text() == "3B4"
+
+
+def test_csv_export_with_headers(qapp, tmp_path, monkeypatch):
+    """Test CSV export functionality that includes header lines."""
+    # Mock the file dialog to return our test file
+    export_file = tmp_path / "exported_mapping.csv"
+    monkeypatch.setattr("PyQt6.QtWidgets.QFileDialog.getSaveFileName", 
+                       lambda *args, **kwargs: (str(export_file), ""))
+    
+    win = MainWindow()
+    
+    # Add some test data to the mapping table
+    win.mapping_table.setRowCount(2)
+    win.mapping_table.setItem(0, 0, QTableWidgetItem("100"))
+    win.mapping_table.setItem(0, 1, QTableWidgetItem("200"))
+    win.mapping_table.setItem(1, 0, QTableWidgetItem("ABC"))
+    win.mapping_table.setItem(1, 1, QTableWidgetItem("DEF"))
+    
+    # Call the export function
+    win._on_export_mapping()
+    
+    # Check that the file was created with headers
+    exported_content = export_file.read_text()
+    lines = exported_content.strip().split('\n')
+    
+    assert len(lines) == 3  # Header + 2 data lines
+    assert lines[0] == "Original ID,Rewritten ID"
+    assert lines[1] == "100,200"
+    assert lines[2] == "ABC,DEF"
+
+
+def test_settings_dialog_creation(qapp):
+    """Test that settings dialog can be created and initialized."""
+    from core.gui import MainWindow
+    from core.settings_dialog import SettingsDialog
+    
+    parent = MainWindow()
+    dialog = SettingsDialog(parent)
+    
+    # Test that dialog has the expected tabs
+    assert dialog.tabs.count() == 3
+    assert dialog.tabs.tabText(0) == "Connection"
+    assert dialog.tabs.tabText(1) == "Logging" 
+    assert dialog.tabs.tabText(2) == "Advanced Throttling"
+
+
+def test_settings_dialog_get_set_settings(qapp):
+    """Test settings dialog get/set functionality."""
+    from core.gui import MainWindow
+    from core.settings_dialog import SettingsDialog
+    
+    parent = MainWindow()
+    dialog = SettingsDialog(parent)
+    
+    # Test initial settings
+    initial_settings = dialog.get_settings()
+    assert "connection" in initial_settings
+    assert "logging" in initial_settings
+    assert "throttling" in initial_settings
+    
+    # Test setting new values
+    test_settings = {
+        "connection": {
+            "input_channel_index": 1,
+            "output_channel_index": 2,
+            "bitrate": "1000",
+        },
+        "logging": {
+            "log_file_path": "/test/path/logfile.csv",
+        },
+        "throttling": {
+            "max_send_retries": "5",
+            "send_retry_initial_delay": "0.02",
+            "tx_min_gap": "0.001",
+            "tx_overflow_cooldown": "0.1",
+        },
+    }
+    
+    dialog.set_settings(test_settings)
+    retrieved_settings = dialog.get_settings()
+    
+    assert retrieved_settings["connection"]["bitrate"] == "1000"
+    assert retrieved_settings["logging"]["log_file_path"] == "/test/path/logfile.csv"
+    assert retrieved_settings["throttling"]["max_send_retries"] == "5"
+
+
+def test_settings_file_save_load(qapp, tmp_path):
+    """Test settings dialog file save/load functionality."""
+    from core.gui import MainWindow
+    from core.settings_dialog import SettingsDialog
+    
+    parent = MainWindow()
+    dialog = SettingsDialog(parent)
+    
+    # Create test settings
+    test_settings = {
+        "connection": {
+            "input_channel_index": 1,
+            "output_channel_index": 2,
+            "bitrate": "1000",
+        },
+        "logging": {
+            "log_file_path": "/test/path/logfile.csv",
+        },
+        "throttling": {
+            "max_send_retries": "15",
+            "send_retry_initial_delay": "0.05",
+            "tx_min_gap": "0.002",
+            "tx_overflow_cooldown": "0.2",
+        },
+    }
+    
+    # Save settings to file
+    settings_file = tmp_path / "test_settings.json"
+    dialog.set_settings(test_settings)
+    dialog.save_settings_to_file(str(settings_file))
+    
+    # Create new dialog and load settings
+    dialog2 = SettingsDialog(parent)
+    dialog2.load_settings_from_file(str(settings_file))
+    
+    loaded_settings = dialog2.get_settings()
+    assert loaded_settings["connection"]["bitrate"] == "1000"
+    assert loaded_settings["throttling"]["max_send_retries"] == "15"
+
+
+def test_main_window_settings_integration(qapp):
+    """Test that main window properly integrates with settings dialog."""
+    win = MainWindow()
+    
+    # Test initial settings exist
+    assert hasattr(win, 'current_settings')
+    assert "connection" in win.current_settings
+    assert "logging" in win.current_settings
+    assert "throttling" in win.current_settings
+    
+    # Test settings dialog creation
+    assert win.settings_dialog is None
+    win._on_open_settings()  # This should create the dialog
+    assert win.settings_dialog is not None
+
+
+def test_menu_actions_exist(qapp):
+    """Test that all new menu actions are properly connected."""
+    win = MainWindow()
+    
+    # Test that menu actions exist
+    assert hasattr(win, 'actionImport')
+    assert hasattr(win, 'actionExport') 
+    assert hasattr(win, 'actionExit')
+    assert hasattr(win, 'actionOpenSettings')
+    assert hasattr(win, 'actionSaveSettings')
+    assert hasattr(win, 'actionLoadSettings')
+
+
+def test_csv_import_mixed_separators(qapp, tmp_path, monkeypatch):
+    """Test CSV import with different separators and malformed lines."""
+    csv_file = tmp_path / "mixed_separators.csv"
+    csv_content = """Original ID;New ID
+100,200
+ABC;DEF
+# This is a comment line
+   
+1A2 3B4
+invalid_line_with_one_column
+0x5E6,0x7F8
+"""
+    csv_file.write_text(csv_content)
+    
+    monkeypatch.setattr("PyQt6.QtWidgets.QFileDialog.getOpenFileName", 
+                       lambda *args, **kwargs: (str(csv_file), ""))
+    
+    win = MainWindow()
+    win._on_import_mapping()
+    
+    # Should have imported 4 valid rows (excluding header, comments, empty lines, invalid lines)
+    assert win.mapping_table.rowCount() == 4
+    
+    assert win.mapping_table.item(0, 0).text() == "100"
+    assert win.mapping_table.item(1, 0).text() == "ABC"  
+    assert win.mapping_table.item(2, 0).text() == "1A2"
+    assert win.mapping_table.item(3, 0).text() == "5E6"

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Settings</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="settingsTabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="connectionTab">
+      <attribute name="title">
+       <string>Connection</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="connectionLayout">
+       <item>
+        <widget class="QGroupBox" name="connection_group">
+         <property name="title">
+          <string>Connection Settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_connection">
+          <item row="1" column="1">
+           <widget class="QComboBox" name="output_channel_combo"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_bitrate">
+            <property name="text">
+             <string>Bitrate (kbps):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="bitrate_combo">
+            <item>
+             <property name="text">
+              <string>125</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>250</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_input_channel">
+            <property name="text">
+             <string>Input Channel:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_output_channel">
+            <property name="text">
+             <string>Output Channel:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="input_channel_combo"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="connectionVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="loggingTab">
+      <attribute name="title">
+       <string>Logging</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="loggingLayout">
+       <item>
+        <widget class="QGroupBox" name="logging_group">
+         <property name="title">
+          <string>Logging Settings</string>
+         </property>
+         <layout class="QGridLayout" name="logging_layout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_log_file">
+            <property name="text">
+             <string>Log File:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="log_file_path_edit">
+            <property name="placeholderText">
+             <string>Optional: path to log file</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <widget class="QPushButton" name="browse_log_file_button">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="loggingVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="throttlingTab">
+      <attribute name="title">
+       <string>Advanced Throttling</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="throttlingLayout">
+       <item>
+        <widget class="QGroupBox" name="throttle_group">
+         <property name="title">
+          <string>Advanced Throttling</string>
+         </property>
+         <property name="toolTip">
+          <string>Configure transmission retry behavior and timing parameters.
+Max Send Retries: Number of retry attempts for failed transmissions
+Initial Retry Delay: Starting delay between retry attempts (seconds)
+TX Min Gap: Minimum time between transmissions (seconds)
+Overflow Cooldown: Delay after buffer overflow before next attempt (seconds)</string>
+         </property>
+         <layout class="QGridLayout" name="throttle_layout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_max_retries">
+            <property name="text">
+             <string>Max Send Retries:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="max_send_retries_edit">
+            <property name="placeholderText">
+             <string>10</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_initial_delay">
+            <property name="text">
+             <string>Initial Retry Delay (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="send_retry_initial_delay_edit">
+            <property name="placeholderText">
+             <string>0.01</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_tx_min_gap">
+            <property name="text">
+             <string>TX Min Gap (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="tx_min_gap_edit">
+            <property name="placeholderText">
+             <string>0.0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_tx_cooldown">
+            <property name="text">
+             <string>Overflow Cooldown (s):</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="tx_overflow_cooldown_edit">
+            <property name="placeholderText">
+             <string>0.05</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QPushButton" name="reset_defaults_button">
+            <property name="text">
+             <string>Reset to Defaults</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="throttlingVerticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>SettingsDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
