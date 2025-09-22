@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import contextlib
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -246,7 +247,12 @@ class MainWindow(QMainWindow):
         base_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path.cwd()
         logs_dir = base_dir / "LOGS"
         logs_dir.mkdir(parents=True, exist_ok=True)
-        default_name = "can_reframe_log.csv"
+        
+        # Generate filename with current date and time
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        default_name = f"can_reframe_log_{timestamp}.csv"
+        
         self.log_file_path_edit.setText(str(logs_dir / default_name))
 
     def _on_browse_log_file(self) -> None:

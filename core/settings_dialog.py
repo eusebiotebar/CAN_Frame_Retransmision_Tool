@@ -6,6 +6,8 @@ Contains settings for connection, logging, and advanced throttling.
 from __future__ import annotations
 
 import json
+import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -101,6 +103,9 @@ class SettingsDialog(QDialog):
         if idx >= 0:
             self.bitrate_combo.setCurrentIndex(idx)
 
+        # Default log file path with timestamp
+        self._set_default_log_path()
+        
         # Default throttling values
         self._reset_throttling_defaults()
 
@@ -110,6 +115,20 @@ class SettingsDialog(QDialog):
         self.send_retry_initial_delay_edit.setText("0.01")
         self.tx_min_gap_edit.setText("0.0")
         self.tx_overflow_cooldown_edit.setText("0.05")
+
+    def _set_default_log_path(self) -> None:
+        """Set default log file path with timestamp."""
+        # Create LOGS directory relative to current working directory
+        base_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path.cwd()
+        logs_dir = base_dir / "LOGS"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename with current date and time
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        default_name = f"can_reframe_log_{timestamp}.csv"
+        
+        self.log_file_path_edit.setText(str(logs_dir / default_name))
 
     def _populate_channel_selectors(self, channels) -> None:
         """Populate channel combo boxes with detected channels."""
