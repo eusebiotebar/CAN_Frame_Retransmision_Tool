@@ -2,12 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/0.9.5/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-29
+## [0.9.5] - 2025-01-29
 
-### Added (1.0.0)
+### Added (0.9.5)
 
 - **Major UI Restructuring**: Complete overhaul of the user interface for better usability and organization
   - Added File menu with Import/Export ID Mapping and Exit options
@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated Software Requirements Verification Plan (SRVP) with corresponding test requirements
   - Detailed documentation of new settings management system
 
-### Changed (1.0.0)
+### Changed (0.9.5)
 
 - **UI Layout Reorganization**: Streamlined main window interface
   - Removed Import/Export buttons from ID Mapping group (moved to File menu)
@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Settings menu centralizes all configuration options
   - Keyboard shortcuts added for common operations (Ctrl+I, Ctrl+E, Ctrl+S, etc.)
 
-### Improved (1.0.0)
+### Improved (0.9.5)
 
 - **User Experience**: Significantly enhanced usability and workflow
   - Tabbed settings dialog provides organized access to all configuration options
@@ -85,13 +85,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Settings validation ensures data integrity
   - Graceful fallback to defaults when settings are missing or corrupted
 
-### Technical Notes (1.0.0)
+### Technical Notes (0.9.5)
 
-- This release represents a major milestone with substantial UI improvements and new functionality.
-- All existing functionality preserved while significantly enhancing user experience.
-- New modular architecture provides foundation for future feature additions.
-- Comprehensive testing ensures reliability of new features.
-- Backward compatibility maintained for existing ID mapping files.
+- This release represents a major milestone with substantial UI improvements and new functionality
+- All existing functionality preserved while significantly enhancing user experience
+- New modular architecture provides foundation for future feature additions
+- Comprehensive testing ensures reliability of new features
+- Backward compatibility maintained for existing ID mapping files
 
 ---
 
