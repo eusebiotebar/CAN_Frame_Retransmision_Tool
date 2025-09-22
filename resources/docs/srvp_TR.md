@@ -1,9 +1,9 @@
 ---
 docType: Software Requirements Verification Plan Report (SRVPR)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 1.0.0
+docVersion: 0.9.5
 docAuthor: eusebiotebar
-createdDate: 2025-09-19
+createdDate: 2025-09-22
 ---
 
 # Test Report - SRVP Functional Requirements
@@ -12,8 +12,8 @@ This document summarizes the latest test run and the verification status of the 
 
 ## Summary
 
-- Tests: 55 passed, 0 failed, 0 skipped (total 55)
-- Requirements: 26 verified, 0 failed, 18 pending (total 44)
+- Tests: 70 passed, 0 failed, 0 skipped (total 70)
+- Requirements: 32 verified, 0 failed, 12 pending (total 44)
 
 ## Requirements Status
 
@@ -29,12 +29,12 @@ This document summarizes the latest test run and the verification status of the 
 | REQ-FUNC-INT-008 | [x] Verified | tests/test_gui_logic.py::test_start_stop_button_toggles |
 | REQ-FUNC-INT-009 | [x] Verified | tests/test_gui_logic.py::test_status_indicator_changes |
 | REQ-FUNC-INT-010 | [x] Verified | tests/test_gui_logic.py::test_latest_frames_view_exists |
-| REQ-FUNC-INT-011 | [ ] Not Started |  |
-| REQ-FUNC-INT-012 | [ ] Not Started |  |
-| REQ-FUNC-INT-013 | [ ] Not Started |  |
-| REQ-FUNC-INT-014 | [ ] Not Started |  |
-| REQ-FUNC-INT-015 | [ ] Not Started |  |
-| REQ-FUNC-INT-016 | [ ] Not Started |  |
+| REQ-FUNC-INT-011 | [x] Verified | tests/test_gui_logic.py::test_menu_actions_exist |
+| REQ-FUNC-INT-012 | [x] Verified | tests/test_gui_logic.py::test_main_window_settings_integration, tests/test_gui_logic.py::test_menu_actions_exist |
+| REQ-FUNC-INT-013 | [x] Verified | tests/test_gui_logic.py::test_header_line_detection, tests/test_gui_logic.py::test_csv_import_with_headers, tests/test_gui_logic.py::test_csv_import_mixed_separators |
+| REQ-FUNC-INT-014 | [x] Verified | tests/test_gui_logic.py::test_csv_export_with_headers |
+| REQ-FUNC-INT-015 | [x] Verified | tests/test_gui_logic.py::test_settings_dialog_creation, tests/test_gui_logic.py::test_settings_dialog_get_set_settings, tests/test_gui_logic.py::test_main_window_settings_integration |
+| REQ-FUNC-INT-016 | [x] Verified | tests/test_gui_logic.py::test_settings_dialog_get_set_settings, tests/test_gui_logic.py::test_settings_file_save_load |
 | REQ-FUNC-LOG-001 | [x] Verified | tests/test_can_logic.py::test_worker_handles_bus_creation_error |
 | REQ-FUNC-LOG-002 | [x] Verified | tests/test_can_logic.py::test_continuous_monitoring_receives_multiple_frames |
 | REQ-FUNC-LOG-003 | [x] Verified | tests/test_can_logic.py::test_signals_are_emitted_for_frames |
@@ -128,39 +128,45 @@ This document summarizes the latest test run and the verification status of the 
 
 ### REQ-FUNC-INT-011
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_menu_actions_exist` — passed
 
 ### REQ-FUNC-INT-012
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_main_window_settings_integration` — passed
+  - ✅ `tests/test_gui_logic.py::test_menu_actions_exist` — passed
 
 ### REQ-FUNC-INT-013
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_header_line_detection` — passed
+  - ✅ `tests/test_gui_logic.py::test_csv_import_with_headers` — passed
+  - ✅ `tests/test_gui_logic.py::test_csv_import_mixed_separators` — passed
 
 ### REQ-FUNC-INT-014
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_csv_export_with_headers` — passed
 
 ### REQ-FUNC-INT-015
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_settings_dialog_creation` — passed
+  - ✅ `tests/test_gui_logic.py::test_settings_dialog_get_set_settings` — passed
+  - ✅ `tests/test_gui_logic.py::test_main_window_settings_integration` — passed
 
 ### REQ-FUNC-INT-016
 
-- Status: [ ] Not Started
+- Status: [x] Verified
 - Tests:
-  - ➖ No tests mapped yet
+  - ✅ `tests/test_gui_logic.py::test_settings_dialog_get_set_settings` — passed
+  - ✅ `tests/test_gui_logic.py::test_settings_file_save_load` — passed
 
 ### REQ-FUNC-LOG-001
 
