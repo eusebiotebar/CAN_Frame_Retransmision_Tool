@@ -12,9 +12,19 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
-                             QLabel, QLineEdit, QMainWindow, QMessageBox,
-                             QPushButton, QTableWidget, QTableWidgetItem)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGroupBox,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QTableWidget,
+    QTableWidgetItem,
+)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
