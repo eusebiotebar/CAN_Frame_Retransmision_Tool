@@ -25,12 +25,12 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 
 - **🖥️ Cross-platform GUI**: PyQt6-based interface for CAN frame analysis
 - **⚡ Real-time CAN Communication**: Load, parse, and retransmit CAN frames  
-- **🖥️ Dual Frame Visualization**: Separate real-time tables for received (RX) and transmitted (TX) frames
+- **🖥️ Dual-Channel Frame Visualization**: Separate real-time tables for both channels (Channel 0 & Channel 1) with dedicated RX/TX monitoring
 
  See the test report in [`srvp_TR.md`](resources/docs/srvp_TR.md) for the latest SRVP verification status.
 
 - **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
-- **🎯 Frame Rewriting**: Advanced rule-based CAN ID transformation
+- **🎯 Bidirectional Frame Rewriting**: Advanced rule-based CAN ID transformation with channel-specific routing
 - **📁 Session Management**: Export and manage CAN communication sessions
 - **📝 Frame Logging**: CSV logging of CAN frames with timestamps and metadata
 - **🚀 Standalone Executable**: No Python installation required for Windows users
@@ -50,9 +50,10 @@ Or run the Windows executable directly: `can-id-reframe.exe`
 
 The application provides an intuitive interface with:
 
-- **Real-time Frame Monitoring**: Separate tables for received and transmitted CAN frames
+- **Dual-Channel Frame Monitoring**: Separate monitoring tables for Channel 0 and Channel 1, each with dedicated RX/TX frame tables
+- **Bidirectional Communication**: Complete support for Ch1→Ch0 (with ID filtering/rewriting and passthrough) and Ch0→Ch1 (passthrough)
 - **Device Auto-detection**: Automatically finds available CAN interfaces
-- **Visual Frame Analysis**: Live display of frame ID, DLC, data, and timestamps
+- **Visual Frame Analysis**: Live display of frame ID, DLC, data, and timestamps across both channels
 - **Rule-based ID Mapping**: Configure CAN ID transformations through the GUI
 
 The application will automatically detect available CAN devices:
@@ -74,6 +75,25 @@ can-id-reframe --help-cli
 ```
 
 Note (Windows, CI/automation): builds may also include a console-enabled helper executable `can-id-reframe-cli.exe` intended for CI smoke tests and scripted usage. It exposes the same `--version` and `--help-cli` options but runs as a console app, while `can-id-reframe.exe` runs as a windowed GUI application.
+
+## Bidirectional CAN Communication
+
+The application supports full bidirectional CAN communication between two channels with intelligent frame routing:
+
+### Communication Flow
+
+- **Channel 1 → Channel 0**:
+  - Frames matching rewrite rules are transformed (CAN ID changed) and retransmitted
+  - Frames not matching rules are passed through unchanged
+- **Channel 0 → Channel 1**:
+  - All frames are passed through unchanged (no ID transformation)
+
+### GUI Display
+
+- **Left Panel (Channel 0)**: Shows frames received from and transmitted to the output/target bus
+- **Right Panel (Channel 1)**: Shows frames received from and transmitted to the input/source bus
+- Each channel displays separate RX (received) and TX (transmitted) frame tables
+- Real-time frame monitoring with millisecond-precision timestamps
 
 ## Supported CAN Hardware
 
@@ -120,17 +140,17 @@ The application includes comprehensive CAN frame logging functionality with both
 
 ### Visual Monitoring
 
-- **Dual-Table Interface**: Separate real-time tables for received (RX) and transmitted (TX) frames
-- **Live Frame Display**: Real-time visualization of CAN traffic with timestamps
-- **Frame Details**: Complete display of ID, DLC, data payload for each frame
-- **Traffic Analysis**: Clear separation between input and output frame streams
+- **Dual-Channel Interface**: Four separate real-time tables - RX/TX for Channel 0 and RX/TX for Channel 1
+- **Live Frame Display**: Real-time visualization of bidirectional CAN traffic with timestamps
+- **Frame Details**: Complete display of ID, DLC, data payload for each frame on both channels
+- **Traffic Analysis**: Clear separation between input/output channels and their respective frame streams
 
 ### Logging Features
 
 - **CSV Export**: Automatic logging of CAN frames to CSV files
 - **Timestamp Precision**: High-precision timestamps (millisecond accuracy)
-- **Bidirectional Logging**: Separate tracking of input and output frames
-- **Metadata Capture**: Frame ID, DLC, data payload, and direction
+- **Dual-Channel Logging**: Complete tracking of frames across both communication channels
+- **Metadata Capture**: Frame ID, DLC, data payload, direction, and channel information
 - **Error Handling**: Robust file operations with permission and I/O error handling
 
 ### CSV Format
