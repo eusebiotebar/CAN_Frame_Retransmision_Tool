@@ -12,19 +12,9 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
@@ -90,6 +80,14 @@ class MainWindow(QMainWindow):
         self._channels: list[dict[str, Any]] = []
         
         # Current settings (will be managed through settings dialog)
+        # Generate default log file path with timestamp
+        base_dir = Path(sys.executable).parent if getattr(sys, "frozen", False) else Path.cwd()
+        logs_dir = base_dir / "LOGS"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        default_log_path = str(logs_dir / f"can_reframe_log_{timestamp}.csv")
+        
         self.current_settings: dict[str, Any] = {
             "connection": {
                 "input_channel_index": 0,
@@ -97,7 +95,7 @@ class MainWindow(QMainWindow):
                 "bitrate": "500",
             },
             "logging": {
-                "log_file_path": "",
+                "log_file_path": default_log_path,
             },
             "throttling": {
                 "max_send_retries": "10",

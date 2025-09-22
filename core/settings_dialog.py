@@ -11,17 +11,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QFileDialog,
-    QLineEdit,
-    QMessageBox,
-    QPushButton,
-    QTabWidget,
-    QWidget,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFileDialog,
+                             QLineEdit, QMessageBox, QPushButton, QTabWidget,
+                             QWidget)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
