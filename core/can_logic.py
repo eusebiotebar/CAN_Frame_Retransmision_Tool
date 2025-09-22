@@ -9,7 +9,6 @@ import ctypes
 import logging
 import platform
 import time
-from functools import partial
 
 import can
 from PyQt6.QtCore import QObject, QThread, pyqtSignal
@@ -95,7 +94,7 @@ class CANWorker(QObject):
                                 timestamp=time.time(),
                             )
                             if self._send_with_retry_on(self.output_bus, new_msg):
-                                self.frame_retransmitted.emit(new_msg, 0)  # transmitted to channel 0
+                                self.frame_retransmitted.emit(new_msg, 0)  # to channel 0
                             else:
                                 self.error_occurred.emit(
                                     "TX buffer overflow: dropped a rewritten frame after retries"
@@ -112,7 +111,7 @@ class CANWorker(QObject):
                                 timestamp=time.time(),
                             )
                             if self._send_with_retry_on(self.output_bus, retransmitted_msg):
-                                self.frame_retransmitted.emit(retransmitted_msg, 0)  # transmitted to channel 0
+                                self.frame_retransmitted.emit(retransmitted_msg, 0)  # to ch 0
                             else:
                                 self.error_occurred.emit(
                                     "TX buffer overflow: dropped a frame after retries"
