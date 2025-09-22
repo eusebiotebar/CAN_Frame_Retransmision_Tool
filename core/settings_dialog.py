@@ -56,7 +56,7 @@ class SettingsDialog(QDialog):
         loadUi(str(ui_file), self)
 
         self.can_manager = can_manager
-        self._channels = []
+        self._channels: list[dict[str, Any]] = []
 
         # Expose the tab widget under the name expected by tests
         # Prefer an existing widget named in the UI, otherwise find or create one.

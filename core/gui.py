@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
     actionOpenSettings: Any  # QAction
     actionSaveSettings: Any  # QAction
     actionLoadSettings: Any  # QAction
-    actionAcerca_de: Any  # QAction
+    actionAbout: Any  # QAction
     mapping_group: QGroupBox
     # Controls expected by tests (may be created programmatically if not in UI)
     bitrate_combo: QComboBox
@@ -83,11 +83,11 @@ class MainWindow(QMainWindow):
 
         self.can_manager = CANManager()
         self.is_running = False
-        self.settings_dialog = None
+        self.settings_dialog: SettingsDialog | None = None
         self._channels: list[dict[str, Any]] = []
         
         # Current settings (will be managed through settings dialog)
-        self.current_settings = {
+        self.current_settings: dict[str, Any] = {
             "connection": {
                 "input_channel_index": 0,
                 "output_channel_index": 1,
@@ -125,9 +125,9 @@ class MainWindow(QMainWindow):
             m_header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         # About action
-        if getattr(self, "actionAcerca_de", None):
+        if getattr(self, "actionAbout", None):
             with contextlib.suppress(Exception):  # pragma: no cover
-                self.actionAcerca_de.triggered.connect(self._show_about_dialog)
+                self.actionAbout.triggered.connect(self._show_about_dialog)
 
         # Ensure required controls exist even if not defined in the .ui (test friendliness)
         if not hasattr(self, "bitrate_combo"):
@@ -138,13 +138,31 @@ class MainWindow(QMainWindow):
             idx = self.bitrate_combo.findText("500")
             if idx >= 0:
                 self.bitrate_combo.setCurrentIndex(idx)
+            # Avoid stray control on the main window
+            self.bitrate_combo.setVisible(False)
 
         if not hasattr(self, "input_channel_combo"):
             self.input_channel_combo = QComboBox(self)
+            # Avoid stray control on the main window
+            self.input_channel_combo.setVisible(False)
         if not hasattr(self, "output_channel_combo"):
             self.output_channel_combo = QComboBox(self)
+            # Avoid stray control on the main window
+            self.output_channel_combo.setVisible(False)
         if not hasattr(self, "log_file_path_edit"):
             self.log_file_path_edit = QLineEdit(self)
+            # Keep this offscreen to avoid stray widget showing on the main window.
+            # The field is kept for tests and helper methods that reference it.
+            self.log_file_path_edit.setVisible(False)
+
+        # Defensive: ensure the placeholder is not visible even if it exists via other paths
+        if hasattr(self, "log_file_path_edit"):
+            with contextlib.suppress(Exception):
+                self.log_file_path_edit.setVisible(False)
+        for _name in ("bitrate_combo", "input_channel_combo", "output_channel_combo"):
+            if hasattr(self, _name):
+                with contextlib.suppress(Exception):
+                    getattr(self, _name).setVisible(False)
 
     def _configure_frame_table(self, table: QTableWidget) -> None:
         """Configure a frame table with standard settings."""
@@ -435,8 +453,8 @@ class MainWindow(QMainWindow):
             self._show_error_message("Configuration Error", "Selected channels are not available.")
             return
 
-        input_data = channels[input_index]
-        output_data = channels[output_index]
+        input_data: dict[str, Any] = channels[input_index]
+        output_data: dict[str, Any] = channels[output_index]
 
         if input_data["channel"] == output_data["channel"]:
             self._show_error_message(

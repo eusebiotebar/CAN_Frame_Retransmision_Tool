@@ -250,7 +250,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionAcerca_de"/>
+    <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
@@ -305,7 +305,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionAcerca_de">
+  <action name="actionAbout">
    <property name="text">
     <string>&amp;About...</string>
    </property>
