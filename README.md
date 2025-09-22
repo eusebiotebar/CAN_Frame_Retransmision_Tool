@@ -32,7 +32,7 @@ pip install git+https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool.git
 - **🔧 Physical CAN Device Support**: Auto-detection of Kvaser, PCAN, Vector, and SocketCAN devices
 - **🎯 Bidirectional Frame Rewriting**: Advanced rule-based CAN ID transformation with channel-specific routing
 - **📁 Session Management**: Export and manage CAN communication sessions
-- **📝 Frame Logging**: CSV logging of CAN frames with timestamps and metadata
+- **📝 Dual-Channel Frame Logging**: Enhanced CSV logging of CAN frames with channel identification, timestamps, and comprehensive metadata
 - **🚀 Standalone Executable**: No Python installation required for Windows users
 - **🐧 Cross-platform**: Windows, Linux, and virtual CAN interface support
 - **🛠️ Enhanced Build Scripts**: Comprehensive PowerShell and Bash scripts for development
@@ -136,7 +136,7 @@ sudo ip link set can0 up type can bitrate 500000
 
 ## CAN Frame Logging
 
-The application includes comprehensive CAN frame logging functionality with both visual monitoring and CSV export:
+The application includes comprehensive CAN frame logging functionality with both visual monitoring and dual-channel CSV export:
 
 ### Visual Monitoring
 
@@ -147,23 +147,38 @@ The application includes comprehensive CAN frame logging functionality with both
 
 ### Logging Features
 
-- **CSV Export**: Automatic logging of CAN frames to CSV files
+- **Dual-Channel CSV Export**: Automatic logging of CAN frames to CSV files with channel identification
 - **Timestamp Precision**: High-precision timestamps (millisecond accuracy)
-- **Dual-Channel Logging**: Complete tracking of frames across both communication channels
+- **Channel-Aware Logging**: Complete tracking of frames across both communication channels (Channel 0 and Channel 1)
+- **Direction Tracking**: Records both RX (received) and TX (transmitted) frame directions per channel
 - **Metadata Capture**: Frame ID, DLC, data payload, direction, and channel information
+- **Grouped Organization**: Frames are organized by channel and direction for better analysis
 - **Error Handling**: Robust file operations with permission and I/O error handling
 
 ### CSV Format
 
-The logged CSV files contain the following columns:
+The logged CSV files contain the following columns with enhanced dual-channel support:
 
 | Column    | Description                           | Example        |
 |-----------|---------------------------------------|----------------|
 | Timestamp | Frame timestamp (seconds.milliseconds) | 1694520123.456 |
-| Direction | Frame direction (Input/Output)        | Input          |
+| Channel   | CAN channel number (0 or 1)          | 0              |
+| Direction | Frame direction (RX/TX)               | RX             |
 | ID        | CAN ID in hexadecimal                | 123            |
 | DLC       | Data Length Code                     | 8              |
 | Data      | Frame data in hex format             | 1234567890ABCDEF |
+
+### Sample CSV Output
+
+```csv
+Timestamp,Channel,Direction,ID,DLC,Data
+1694520123.456,0,RX,123,8,1234567890ABCDEF
+1694520123.457,0,TX,456,4,DEADBEEF
+1694520123.458,1,RX,789,2,CAFE
+1694520123.459,1,TX,ABC,6,112233445566
+```
+
+This enhanced logging format allows for comprehensive analysis of bidirectional CAN communication patterns across both channels, making it easier to debug and monitor dual-channel CAN applications.
 
 ## Features (Planned)
 

@@ -567,10 +567,10 @@ class CANManager(QObject):
             frame_logger = self._frame_logger  # Local reference for type checker
             
             def log_rx_frame(msg, channel):
-                frame_logger.log_frame("RX", msg)
+                frame_logger.log_frame("RX", msg, channel)
             
             def log_tx_frame(msg, channel):
-                frame_logger.log_frame("TX", msg)
+                frame_logger.log_frame("TX", msg, channel)
             
             self.worker.frame_received.connect(log_rx_frame)
             self.worker.frame_retransmitted.connect(log_tx_frame)

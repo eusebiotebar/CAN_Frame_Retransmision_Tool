@@ -6,7 +6,7 @@ import csv
 
 
 class FrameLogger:
-    """Logs CAN frames to a CSV file."""
+    """Logs CAN frames to a CSV file with dual-channel support."""
 
     def __init__(self):
         self._log_file_path: str | None = None
@@ -31,8 +31,8 @@ class FrameLogger:
                 self._log_file_path, mode="w", newline="", encoding="utf-8"
             )
             self._csv_writer = csv.writer(self._log_file)
-            # Write header
-            self._csv_writer.writerow(["Timestamp", "Direction", "ID", "DLC", "Data"])
+            # Write header with channel information
+            self._csv_writer.writerow(["Timestamp", "Channel", "Direction", "ID", "DLC", "Data"])
             self.is_logging = True
         except (OSError, PermissionError) as e:
             # In a real GUI app, you'd want to show this error to the user.
@@ -42,8 +42,14 @@ class FrameLogger:
             # and displayed in a dialog box.
             print(f"Error opening log file: {e}")
 
-    def log_frame(self, direction: str, msg):
-        """Logs a single CAN frame."""
+    def log_frame(self, direction: str, msg, channel: int = 0):
+        """Logs a single CAN frame with channel information.
+        
+        Args:
+            direction: Direction of the frame ("RX" or "TX")
+            msg: CAN message object from python-can
+            channel: Channel number (0 or 1)
+        """
         if not self.is_logging or not self._csv_writer:
             return
 
@@ -52,7 +58,7 @@ class FrameLogger:
         dlc = msg.dlc
         data = msg.data.hex().upper()
 
-        self._csv_writer.writerow([timestamp, direction, can_id, dlc, data])
+        self._csv_writer.writerow([timestamp, channel, direction, can_id, dlc, data])
 
     def stop_logging(self):
         """Closes the log file."""
