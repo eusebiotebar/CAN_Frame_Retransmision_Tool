@@ -1,7 +1,7 @@
 ---
 docType: Software Requirements Verification Plan Report (SRVPR)
 docSubtitle: CAN Frame Retransmission Tool
-docVersion: 0.9.5
+docVersion: 1.0.0
 docAuthor: eusebiotebar
 createdDate: 2025-09-22
 ---
