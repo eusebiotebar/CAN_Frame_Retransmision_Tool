@@ -12,6 +12,7 @@ a = Analysis(
     datas=[
         ('core/version_info.txt', 'core'),
         ('core/gui.ui', 'core'),
+        ('core/settings_dialog.ui', 'core'),
         ('resources/images/app_icon.ico', 'resources/images'),
         ('resources/images/can_relay_icon.svg', 'resources/images'),
     ],
