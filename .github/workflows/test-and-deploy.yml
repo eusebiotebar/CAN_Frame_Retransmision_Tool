@@ -86,8 +86,12 @@ jobs:
           scripts/build.ps1 -Executable
       - name: Test executable (CLI)
         run: |
-          $cli = "dist/can-id-reframe-cli.exe"
-          $gui = "dist/can-id-reframe.exe"
+          # Get version from version_info.txt
+          $version = Get-Content "core\version_info.txt" -Raw | ForEach-Object { $_.Trim() }
+          Write-Host "Testing executables for version: $version"
+          
+          $cli = "dist/can-id-reframe-cli-$version.exe"
+          $gui = "dist/can-id-reframe-$version.exe"
           if ((Test-Path $cli) -and (Test-Path $gui)) {
             Write-Host "✅ Executables built successfully"
             # Test CLI executable with help (doesn't start GUI)
@@ -98,15 +102,21 @@ jobs:
               Write-Error "❌ CLI executable test failed with exit code $LASTEXITCODE"
             }
           } else {
-            Write-Error "❌ Executable(s) not found"
+            Write-Error "❌ Executable(s) not found. Expected: $cli and $gui"
           }
+      - name: Upload Windows executables
+        run: |
+          # Get version for upload paths
+          $version = Get-Content "core\version_info.txt" -Raw | ForEach-Object { $_.Trim() }
+          # Copy executables with generic names for consistent download
+          Copy-Item "dist/can-id-reframe-$version.exe" "dist/can-id-reframe.exe"
+          Copy-Item "dist/can-id-reframe-cli-$version.exe" "dist/can-id-reframe-cli.exe"
       - name: Upload Windows executables
         uses: actions/upload-artifact@v4
         with:
           name: windows-executables
           path: |
-            dist/can-id-reframe.exe
-            dist/can-id-reframe-cli.exe
+            dist/can-id-reframe*.exe
 
   deploy-staging:
     needs: [build-test, build-windows-exe]

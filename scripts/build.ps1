@@ -39,13 +39,18 @@ if ($Executable) {
     # Ensure project and its dependencies are installed (so hidden/optional deps are present)
     py -m pip install -e .
     
+    # Get version from version_info.txt
+    $version = Get-Content "core\version_info.txt" -Raw | ForEach-Object { $_.Trim() }
+    Write-Host "Building executable for version: $version" -ForegroundColor Cyan
+    
     # Build executable using spec file
     py -m PyInstaller can-id-reframe.spec --clean --noconfirm
     
-    if (Test-Path "dist\can-id-reframe.exe") {
-        Write-Host "Executable built successfully: dist\can-id-reframe.exe" -ForegroundColor Green
+    $executableName = "can-id-reframe-$version.exe"
+    if (Test-Path "dist\$executableName") {
+        Write-Host "Executable built successfully: dist\$executableName" -ForegroundColor Green
     } else {
-        Write-Host "Failed to build executable" -ForegroundColor Red
+        Write-Host "Failed to build executable: dist\$executableName" -ForegroundColor Red
         exit 1
     }
 }

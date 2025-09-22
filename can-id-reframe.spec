@@ -1,9 +1,19 @@
 """PyInstaller spec for CAN_ID_Reframe.
 
-Generates a Windows standalone executable: can-id-reframe.exe
+Generates a Windows standalone executable: can-id-reframe-{version}.exe
 """
 
 # -*- mode: python ; coding: utf-8 -*-
+
+import sys
+from pathlib import Path
+
+# Add the core directory to sys.path to import version
+# Use current working directory since __file__ is not available in PyInstaller context
+project_root = Path.cwd()
+sys.path.insert(0, str(project_root / 'core'))
+
+from version import __version__
 
 a = Analysis(
     ['can_id_reframe_cli.py'],
@@ -32,7 +42,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='can-id-reframe',
+    name=f'can-id-reframe-{__version__}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -55,7 +65,7 @@ exe_cli = EXE(
     a.binaries,
     a.datas,
     [],
-    name='can-id-reframe-cli',
+    name=f'can-id-reframe-cli-{__version__}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
