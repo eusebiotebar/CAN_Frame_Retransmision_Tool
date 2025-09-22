@@ -210,3 +210,4 @@ __marimo__/
 .github/workflows/logs/*
 .github/prompts/*
 .github/instructions/CheckModifications.instructions.md
+resources/DefaultSettings.json

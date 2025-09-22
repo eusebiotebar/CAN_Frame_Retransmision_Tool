@@ -183,6 +183,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     def _connect_signals(self) -> None:
         self.can_manager.error_occurred.connect(self._handle_error)
+        self.can_manager.channels_detected.connect(self._populate_channel_selectors)
         # Connect frame signals directly now that they include channel information
         self.can_manager.frame_received.connect(self._add_received_frame_to_view)
         self.can_manager.frame_retransmitted.connect(self._add_transmitted_frame_to_view)
@@ -588,6 +589,16 @@ class MainWindow(QMainWindow):
         """Apply settings when the settings dialog is accepted."""
         if self.settings_dialog is not None:
             self.current_settings = self.settings_dialog.get_settings()
+            
+            # Update main window combo boxes to match settings dialog selection
+            conn_settings = self.current_settings.get("connection", {})
+            input_idx = conn_settings.get("input_channel_index", 0)
+            output_idx = conn_settings.get("output_channel_index", 1)
+            
+            if input_idx < self.input_channel_combo.count():
+                self.input_channel_combo.setCurrentIndex(input_idx)
+            if output_idx < self.output_channel_combo.count():
+                self.output_channel_combo.setCurrentIndex(output_idx)
     
     def _on_save_settings(self) -> None:
         """Save current settings to a file."""
@@ -613,6 +624,17 @@ class MainWindow(QMainWindow):
                 import json
                 with open(filename) as f:
                     self.current_settings = json.load(f)
+                
+                # Update main window combo boxes to match loaded settings
+                conn_settings = self.current_settings.get("connection", {})
+                input_idx = conn_settings.get("input_channel_index", 0)
+                output_idx = conn_settings.get("output_channel_index", 1)
+                
+                if input_idx < self.input_channel_combo.count():
+                    self.input_channel_combo.setCurrentIndex(input_idx)
+                if output_idx < self.output_channel_combo.count():
+                    self.output_channel_combo.setCurrentIndex(output_idx)
+                
                 QMessageBox.information(self, "Success", "Settings loaded successfully!")
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to load settings: {e}")
