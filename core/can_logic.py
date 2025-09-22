@@ -20,8 +20,8 @@ from .frame_logger import FrameLogger
 class CANWorker(QObject):
     """Worker object that performs the CAN retransmission in a separate thread."""
 
-    frame_received = pyqtSignal(object)
-    frame_retransmitted = pyqtSignal(object)
+    frame_received = pyqtSignal(object, int)  # msg, channel
+    frame_retransmitted = pyqtSignal(object, int)  # msg, channel
     error_occurred = pyqtSignal(str)
     # Recovery lifecycle signals
     recovery_started = pyqtSignal()
@@ -85,8 +85,8 @@ class CANWorker(QObject):
                         self._busoff_streak = 0
                         new_id = self.rewrite_rules.get(msg_in.arbitration_id)
                         if new_id is not None:
-                            # Emit RX only for frames that will be transformed
-                            self.frame_received.emit(msg_in)
+                            # Emit RX for frames that will be transformed (received on channel 1)
+                            self.frame_received.emit(msg_in, 1)
                             new_msg = can.Message(
                                 arbitration_id=new_id,
                                 data=msg_in.data,
@@ -95,12 +95,14 @@ class CANWorker(QObject):
                                 timestamp=time.time(),
                             )
                             if self._send_with_retry_on(self.output_bus, new_msg):
-                                self.frame_retransmitted.emit(new_msg)
+                                self.frame_retransmitted.emit(new_msg, 0)  # transmitted to channel 0
                             else:
                                 self.error_occurred.emit(
                                     "TX buffer overflow: dropped a rewritten frame after retries"
                                 )
                         else:
+                            # Emit RX for passthrough frames (received on channel 1)
+                            self.frame_received.emit(msg_in, 1)
                             # Passthrough silently
                             retransmitted_msg = can.Message(
                                 arbitration_id=msg_in.arbitration_id,
@@ -109,7 +111,9 @@ class CANWorker(QObject):
                                 is_extended_id=msg_in.is_extended_id,
                                 timestamp=time.time(),
                             )
-                            if not self._send_with_retry_on(self.output_bus, retransmitted_msg):
+                            if self._send_with_retry_on(self.output_bus, retransmitted_msg):
+                                self.frame_retransmitted.emit(retransmitted_msg, 0)  # transmitted to channel 0
+                            else:
                                 self.error_occurred.emit(
                                     "TX buffer overflow: dropped a frame after retries"
                                 )
@@ -137,6 +141,8 @@ class CANWorker(QObject):
                     msg_out = self.output_bus.recv(timeout=0.01)
                     if msg_out:
                         self._busoff_streak = 0
+                        # Emit RX for frames received on channel 0
+                        self.frame_received.emit(msg_out, 0)
                         back_msg = can.Message(
                             arbitration_id=msg_out.arbitration_id,
                             data=msg_out.data,
@@ -144,8 +150,10 @@ class CANWorker(QObject):
                             is_extended_id=msg_out.is_extended_id,
                             timestamp=time.time(),
                         )
-                        # Retransmit silently to Input
-                        if not self._send_with_retry_on(self.input_bus, back_msg):
+                        # Retransmit to Input (channel 1)
+                        if self._send_with_retry_on(self.input_bus, back_msg):
+                            self.frame_retransmitted.emit(back_msg, 1)  # transmitted to channel 1
+                        else:
                             self.error_occurred.emit(
                                 "TX buffer overflow: dropped a frame after retries"
                             )
@@ -322,8 +330,8 @@ class CANManager(QObject):
     """
 
     channels_detected = pyqtSignal(list)
-    frame_received = pyqtSignal(object)
-    frame_retransmitted = pyqtSignal(object)
+    frame_received = pyqtSignal(object, int)  # msg, channel
+    frame_retransmitted = pyqtSignal(object, int)  # msg, channel
     error_occurred = pyqtSignal(str)
     # Forwarded worker recovery signals
     recovery_started = pyqtSignal()
@@ -556,8 +564,17 @@ class CANManager(QObject):
 
         # Connect worker signals to logger if active
         if self._frame_logger and self._frame_logger.is_logging:
-            self.worker.frame_received.connect(partial(self._frame_logger.log_frame, "RX"))
-            self.worker.frame_retransmitted.connect(partial(self._frame_logger.log_frame, "TX"))
+            # Create wrapper functions to handle the new signal signature (msg, channel)
+            frame_logger = self._frame_logger  # Local reference for type checker
+            
+            def log_rx_frame(msg, channel):
+                frame_logger.log_frame("RX", msg)
+            
+            def log_tx_frame(msg, channel):
+                frame_logger.log_frame("TX", msg)
+            
+            self.worker.frame_received.connect(log_rx_frame)
+            self.worker.frame_retransmitted.connect(log_tx_frame)
 
         self._thread.started.connect(self.worker.run)
         self.worker.finished.connect(self._thread.quit)

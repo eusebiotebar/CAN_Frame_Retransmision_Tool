@@ -11,19 +11,9 @@ from pathlib import Path
 from typing import Any
 
 from PyQt6.QtGui import QCloseEvent, QIcon
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QFileDialog,
-    QGroupBox,
-    QHeaderView,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QMessageBox,
-    QPushButton,
-    QTableWidget,
-    QTableWidgetItem,
-)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHeaderView,
+                             QLabel, QLineEdit, QMainWindow, QMessageBox,
+                             QPushButton, QTableWidget, QTableWidgetItem)
 from PyQt6.uic.load_ui import loadUi
 
 from .can_logic import CANManager
@@ -37,8 +27,10 @@ class MainWindow(QMainWindow):
 
     # Hints for linters to know the attributes injected by loadUi
     # Note: Connection, logging, and throttling controls are now in settings dialog
-    frames_table_RX: QTableWidget
-    frames_table_TX: QTableWidget
+    frames_table_RX_Channel0: QTableWidget
+    frames_table_TX_Channel0: QTableWidget
+    frames_table_RX_Channel1: QTableWidget
+    frames_table_TX_Channel1: QTableWidget
     mapping_table: QTableWidget
     add_rule_button: QPushButton
     delete_rule_button: QPushButton
@@ -113,9 +105,11 @@ class MainWindow(QMainWindow):
     # Initial widget configuration
     # ------------------------------------------------------------------
     def _configure_widgets(self) -> None:
-        # Frame tables configuration
-        self._configure_frame_table(self.frames_table_RX)
-        self._configure_frame_table(self.frames_table_TX)
+        # Frame tables configuration for both channels
+        self._configure_frame_table(self.frames_table_RX_Channel0)
+        self._configure_frame_table(self.frames_table_TX_Channel0)
+        self._configure_frame_table(self.frames_table_RX_Channel1)
+        self._configure_frame_table(self.frames_table_TX_Channel1)
 
         # Mapping table
         self.mapping_table.setColumnCount(2)
@@ -179,6 +173,7 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     def _connect_signals(self) -> None:
         self.can_manager.error_occurred.connect(self._handle_error)
+        # Connect frame signals directly now that they include channel information
         self.can_manager.frame_received.connect(self._add_received_frame_to_view)
         self.can_manager.frame_retransmitted.connect(self._add_transmitted_frame_to_view)
         # Recovery lifecycle to inform user about reconnect attempts
@@ -253,13 +248,19 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Frame reception and transmission
     # ------------------------------------------------------------------
-    def _add_received_frame_to_view(self, msg) -> None:  # msg comes from python-can
-        """Add a received CAN frame to the RX table."""
-        self._add_frame_to_table(self.frames_table_RX, msg)
+    def _add_received_frame_to_view(self, msg, channel: int) -> None:  # msg comes from python-can
+        """Add a received CAN frame to the appropriate RX table based on channel."""
+        if channel == 0:
+            self._add_frame_to_table(self.frames_table_RX_Channel0, msg)
+        else:  # channel == 1
+            self._add_frame_to_table(self.frames_table_RX_Channel1, msg)
 
-    def _add_transmitted_frame_to_view(self, msg) -> None:  # msg comes from python-can
-        """Add a transmitted CAN frame to the TX table."""
-        self._add_frame_to_table(self.frames_table_TX, msg)
+    def _add_transmitted_frame_to_view(self, msg, channel: int) -> None:  # msg comes from python-can
+        """Add a transmitted CAN frame to the appropriate TX table based on channel."""
+        if channel == 0:
+            self._add_frame_to_table(self.frames_table_TX_Channel0, msg)
+        else:  # channel == 1
+            self._add_frame_to_table(self.frames_table_TX_Channel1, msg)
 
     def _add_frame_to_table(self, table: QTableWidget, msg) -> None:
         """Add a CAN frame to the specified table."""

@@ -218,8 +218,11 @@ def test_latest_frames_view_exists(qapp):
     This test validates presence and basic configuration only.
     """
     win = MainWindow()
-    assert win.frames_table_RX.columnCount() == 4
-    assert win.frames_table_TX.columnCount() == 4
+    # Test both channel frame tables exist and are configured
+    assert win.frames_table_RX_Channel0.columnCount() == 4
+    assert win.frames_table_TX_Channel0.columnCount() == 4
+    assert win.frames_table_RX_Channel1.columnCount() == 4
+    assert win.frames_table_TX_Channel1.columnCount() == 4
 
 
 def test_bitrate_applied_on_start(qapp, monkeypatch):
@@ -348,10 +351,11 @@ def test_ui_timestamps_include_milliseconds(qapp):
             self.data = bytes([0x01, 0x02])
 
     ts = 1726480000.1234
-    win._add_received_frame_to_view(DummyMsg(ts))
+    # Test adding frame to channel 1 (input channel)
+    win._add_received_frame_to_view(DummyMsg(ts), channel=1)
 
-    # Read back the timestamp text from the RX table
-    item = win.frames_table_RX.item(0, 0)
+    # Read back the timestamp text from the RX table for channel 1
+    item = win.frames_table_RX_Channel1.item(0, 0)
     assert item is not None
     text = item.text()
 
