@@ -575,7 +575,7 @@ class MainWindow(QMainWindow):
     def _on_open_settings(self) -> None:
         """Open the settings dialog."""
         if self.settings_dialog is None:
-            self.settings_dialog = SettingsDialog(self)
+            self.settings_dialog = SettingsDialog(self, self.can_manager)
             # Update settings when the dialog is accepted
             self.settings_dialog.accepted.connect(self._on_settings_accepted)
 
