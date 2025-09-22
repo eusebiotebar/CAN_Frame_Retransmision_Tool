@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/0.9.5/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-09-22
+
+### Added (1.0.0)
+
+- **Comprehensive Test-to-Requirement Mapping**: Complete traceability between tests and requirements
+  - Added `"Covers: REQ-FUNC-INT-011..016"` annotations in test docstrings for new UI requirements
+  - Enhanced `test_gui_logic.py` with detailed requirement coverage for settings and CSV functionality
+  - Automated requirement verification through SRVP test report generation
+  - All new integration requirements (INT-011 through INT-016) now properly mapped and verified
+
+### Fixed (1.0.0)
+
+- **Test Suite Robustness**: Enhanced test reliability and maintainability
+  - Fixed `settingsTabWidget` reference in settings dialog tests (was incorrectly using `tabs`)
+  - Added null safety checks for `QTableWidgetItem` access preventing `None` dereference errors
+  - Enhanced CSV import/export tests with proper item validation
+  - Fixed mixed separator handling in CSV import tests with better error handling
+
+### Improved (1.0.0)
+
+- **SRVP Report Generation**: Automated verification plan reporting
+  - Updated SRVP script with robust Windows pytest invocation using fallback to `py` launcher
+  - Enhanced error handling for test execution in CI environments
+  - Generated comprehensive SRVP test report showing 32 verified requirements (up from 26)
+  - All new requirements REQ-FUNC-INT-011 through REQ-FUNC-INT-016 now marked as Verified
+
+### Changed (1.0.0)
+
+- **Test Documentation**: Enhanced test descriptions and requirement coverage
+  - All settings-related tests now include clear requirement ID mappings
+  - CSV header detection and import/export tests linked to specific requirements
+  - Menu action tests properly annotated for UI integration requirements
+  - Mixed separator CSV handling tests added with comprehensive validation
+
+### Technical Notes (1.0.0)
+
+- This milestone release establishes complete requirement verification traceability
+- Test suite now covers 55 tests with all new UI features properly validated
+- SRVP automation ensures continuous verification of requirement compliance
+- Enhanced CI robustness with Windows-specific pytest invocation improvements
+
 ## [0.9.5] - 2025-01-29
 
 ### Added (0.9.5)
