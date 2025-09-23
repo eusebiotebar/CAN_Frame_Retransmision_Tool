@@ -40,11 +40,17 @@ jobs:
       - name: Build Windows executable
         run: |
           pyinstaller can-id-reframe.spec --clean --noconfirm
+      - name: Get version for executable name
+        id: version
+        run: |
+          $version = Get-Content core/version_info.txt | Select-Object -First 1
+          $version = $version.Trim()
+          echo "version=$version" >> $env:GITHUB_OUTPUT
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: windows-exe
-          path: dist/can-id-reframe.exe
+          path: dist/can-id-reframe-*.exe
 
   release:
     needs: [build-python, build-windows]

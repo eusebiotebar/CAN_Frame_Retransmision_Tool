@@ -41,10 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Notes (1.0.0)
 
-- This milestone release establishes complete requirement verification traceability
-- Test suite now covers 55 tests with all new UI features properly validated
-- SRVP automation ensures continuous verification of requirement compliance
-- Enhanced CI robustness with Windows-specific pytest invocation improvements
+- This milestone release establishes complete requirement verification traceability.
+- Test suite now covers 55 tests with all new UI features properly validated.
+- SRVP automation ensures continuous verification of requirement compliance.
+- Enhanced CI robustness with Windows-specific pytest invocation improvements.
 
 ## [0.9.5] - 2025-01-29
 
