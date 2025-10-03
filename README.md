@@ -5,7 +5,7 @@
 ![Release](https://raw.githubusercontent.com/eusebiotebar/CAN_Frame_Retransmision_Tool/main/resources/assets/release-badge.svg)
 [![Download](https://raw.githubusercontent.com/eusebiotebar/CAN_Frame_Retransmision_Tool/main/resources/assets/download-badge.svg)](https://github.com/eusebiotebar/CAN_Frame_Retransmision_Tool/releases/latest)
 
-Tool for reframing / retransmitting CAN IDs (renamed from CAN Frame Retransmision Tool at v0.2.0).
+Tool for reframing / retransmitting CAN IDs.
 
 ## Installation
 
@@ -179,11 +179,6 @@ Timestamp,Channel,Direction,ID,DLC,Data
 ```
 
 This enhanced logging format allows for comprehensive analysis of bidirectional CAN communication patterns across both channels, making it easier to debug and monitor dual-channel CAN applications.
-
-## Features (Planned)
-
-- Advanced CAN frame filtering and analysis
-- Real-time frame monitoring dashboard
 
 ## Project Layout
 
