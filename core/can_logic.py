@@ -1,7 +1,13 @@
 """Module for CAN communication logic using python-can and PyQt.
 
 This module defines the CANManager and CANWorker classes, which handle
-CAN device detection, message retransmission, and threading.
+CAN device detection, bidirectional message retransmission with Full Swap
+ID mapping support, and threading.
+
+Full Swap Feature:
+- Channel 0 ↔ Channel 1: Bidirectional retransmission with ID mapping
+- Both directions apply rewrite rules when available
+- Passthrough when no mapping rule exists
 """
 
 import contextlib
@@ -17,7 +23,13 @@ from .frame_logger import FrameLogger
 
 
 class CANWorker(QObject):
-    """Worker object that performs the CAN retransmission in a separate thread."""
+    """Worker object that performs bidirectional CAN retransmission with Full Swap ID mapping.
+    
+    Features:
+    - Input→Output: Apply ID mapping rules when available, passthrough otherwise
+    - Output→Input: Apply ID mapping rules when available, passthrough otherwise (Full Swap)
+    - Both directions support configurable throttling and error recovery
+    """
 
     frame_received = pyqtSignal(object, int)  # msg, channel
     frame_retransmitted = pyqtSignal(object, int)  # msg, channel
@@ -135,27 +147,47 @@ class CANWorker(QObject):
                         raise can.CanError("bus off") from e
                     raise
 
-                # Poll Output bus (Output -> Input path, always passthrough, no rewrite)
+                # Poll Output bus (Output -> Input path with ID mapping support - Full Swap)
                 try:
                     msg_out = self.output_bus.recv(timeout=0.01)
                     if msg_out:
                         self._busoff_streak = 0
-                        # Emit RX for frames received on channel 0
-                        self.frame_received.emit(msg_out, 0)
-                        back_msg = can.Message(
-                            arbitration_id=msg_out.arbitration_id,
-                            data=msg_out.data,
-                            dlc=msg_out.dlc,
-                            is_extended_id=msg_out.is_extended_id,
-                            timestamp=time.time(),
-                        )
-                        # Retransmit to Input (channel 1)
-                        if self._send_with_retry_on(self.input_bus, back_msg):
-                            self.frame_retransmitted.emit(back_msg, 1)  # transmitted to channel 1
-                        else:
-                            self.error_occurred.emit(
-                                "TX buffer overflow: dropped a frame after retries"
+                        # Check if this frame's ID should be rewritten based on mapping rules
+                        new_id = self.rewrite_rules.get(msg_out.arbitration_id)
+                        if new_id is not None:
+                            # Emit RX for frames that will be transformed (received on channel 0)
+                            self.frame_received.emit(msg_out, 0)
+                            # Apply ID mapping transformation
+                            back_msg = can.Message(
+                                arbitration_id=new_id,
+                                data=msg_out.data,
+                                dlc=msg_out.dlc,
+                                is_extended_id=msg_out.is_extended_id,
+                                timestamp=time.time(),
                             )
+                            if self._send_with_retry_on(self.input_bus, back_msg):
+                                self.frame_retransmitted.emit(back_msg, 1)  # to channel 1
+                            else:
+                                self.error_occurred.emit(
+                                    "TX buffer overflow: dropped a rewritten frame after retries"
+                                )
+                        else:
+                            # Emit RX for passthrough frames (received on channel 0)
+                            self.frame_received.emit(msg_out, 0)
+                            # Passthrough without ID modification
+                            back_msg = can.Message(
+                                arbitration_id=msg_out.arbitration_id,
+                                data=msg_out.data,
+                                dlc=msg_out.dlc,
+                                is_extended_id=msg_out.is_extended_id,
+                                timestamp=time.time(),
+                            )
+                            if self._send_with_retry_on(self.input_bus, back_msg):
+                                self.frame_retransmitted.emit(back_msg, 1)  # to channel 1
+                            else:
+                                self.error_occurred.emit(
+                                    "TX buffer overflow: dropped a frame after retries"
+                                )
                 except Exception as e:
                     text = str(e).lower()
                     looks_bus_off = ("bus off" in text) or isinstance(
